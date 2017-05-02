@@ -36,19 +36,11 @@
           "icon": "maya2016_icon.png"
         },
         {
-          "app": "Houdini",
-          "version": "16.0",
-          "desc": "",
-          "tools": ["base", "houdini16.0"],
-          "command": "houdini",
-          "icon": "houdini_icon.png"
-        },
-        {
           "app": "Mari",
           "version": "3.1v1",
           "desc": "",
-          "tools": ["base", "mari3.0v3"],
-          "command": "mari",
+          "tools": ["base", "mari3.1v1"],
+          "command": "Mari3.1v1",
           "icon": "mari3_icon.png"
         },
         {
@@ -71,6 +63,19 @@
           "tools": ["base", "videoq"],
           "command": "",
           "icon": "maya2016_icon.png"
+        }
+      ]
+    },
+    {
+      "name": "Testing",
+      "apps": [
+        {
+          "app": "Houdini",
+          "version": "16.0",
+          "desc": "",
+          "tools": ["base", "houdini16.0"],
+          "command": "houdinifx",
+          "icon": "houdini_icon.png"
         }
       ]
     }
