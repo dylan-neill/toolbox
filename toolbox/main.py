@@ -13,11 +13,12 @@ import resource
 import data
 import ui
 
+
 def main(dev=False):
 
     # Set the app id in windows so we get a taskbar icon
     if platform.system().lower() == 'windows':
-        myappid = 'fsm.toolbox.1' # arbitrary string
+        myappid = 'dn.toolbox.1' # arbitrary string
         ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
 
     data.populate()

@@ -26,27 +26,21 @@ def populate():
 
     houdini_app = App('Houdini')
     houdini_app.package = 'houdini'
-    houdini_app.command = 'houdinifx'
-    houdini_app.add_versions(version_list=['15.0'], icon="houdini_icon.png")
+    houdini_app.command = 'houdini'
+    houdini_app.add_versions(version_list=['15.0','16.0'], icon="houdini_icon.png")
     apps.append(houdini_app)
 
     mari_app = App('Mari')
     mari_app.package = 'mari'
     mari_app.command = 'mari'
-    mari_app.add_versions(version_list=['2.6v5', '3.0v2', '3.0v3'], icon="mari_icon.png")
+    mari_app.add_versions(version_list=['2.6v5', '3.0v2', '3.0v3', '3.1v1'], icon="mari_icon.png")
     apps.append(mari_app)
 
-    nukex_app = App('NukeX')
-    nukex_app.package = 'nuke'
-    nukex_app.command = 'nukex'
-    nukex_app.add_versions(version_list=['6.3v4', '9.0v5', '9.0v8'], icon="nuke_icon.png")
-    apps.append(nukex_app)
-
-    nukestudio_app = App('Nuke Studio')
-    nukestudio_app.package = 'nuke'
-    nukestudio_app.command = 'nukestudio'
-    nukestudio_app.add_versions(version_list=['9.0v5', '9.0v8'], icon="nuke_icon.png")
-    apps.append(nukestudio_app)
+    nuke_app = App('Nuke')
+    nuke_app.package = 'nuke'
+    nuke_app.command = 'nuke9.0'
+    nuke_app.add_versions(version_list=['9.0v8'], icon="nuke_icon.png")
+    apps.append(nuke_app)
 
     config_file = resource.named('config.json', of_type='json')
     with open(config_file) as file_id:

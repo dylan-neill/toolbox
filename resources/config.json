@@ -7,345 +7,62 @@
           "app": "Maya",
           "version": "2016",
           "desc": "",
-          "tools": ["fsmpipe", "maya2016", "substance1.2.3.0", "deadline8.0"],
-          "icon": "maya2016_icon.png"
-        },
-        { "app": "Maya",
-          "version": "2016",
-          "desc": "MTOA 1.2.7.3",
-          "tools": ["fsmpipe", "maya2016", "mtoa1.2.7.3", "alshaders1.0.0rc14", "substance1.2.3.0", "deadline8.0"],
-          "icon": "maya2016_icon.png"
-        },
-        {
-          "app": "Maya",
-          "version": "2016",
-          "desc": "V-Ray 3.4.6",
-          "tools": ["fsmpipe", "maya2016", "vray3.4.6", "substance1.2.3.0", "deadline8.0"],
-          "icon": "maya2016_icon.png"
-        },
-        {
-          "app": "Maya",
-          "version": "2016",
-          "desc": "Redshift 2.0",
-          "tools": ["fsmpipe", "maya2016", "redshift2.0", "substance1.2.3.0", "deadline8.0"],
-          "icon": "maya2016_icon.png"
-        },
-        {
-          "app": "Maya",
-          "version": "2016.5",
-          "desc": "Redshift 2.0",
-          "tools": ["fsmpipe", "maya2016.5", "redshift2.0", "substance1.2.3.0", "deadline8.0"],
-          "icon": "maya2016_icon.png"
-        },
-        {
-          "app": "Houdini",
-          "version": "15.0",
-          "desc": "",
-          "tools": ["fsmpipe", "houdini15.0.459"],
-          "icon": "houdini_icon.png"
-        },
-        {
-          "app": "Mari",
-          "version": "3.0v3",
-          "desc": "",
-          "tools": ["fsmpipe", "mari3.0v3"],
-          "icon": "mari3_icon.png"
-        },
-        {
-          "app": "NukeX",
-          "version": "6.3v4",
-          "desc": "",
-          "tools": ["fsmpipe", "nuke6.3v4"],
-          "icon": "nuke_icon.png"
-        },
-        {
-          "app": "NukeX",
-          "version": "9.0v8",
-          "desc": "",
-          "tools": ["fsmpipe", "nuke9.0v8"],
-          "icon": "nuke9_icon.png"
-        },
-        {
-          "app": "Nuke Studio",
-          "version": "9.0v8",
-          "desc": "",
-          "tools": ["fsmpipe", "nuke9.0v8"],
-          "icon": "nuke9_icon.png"
-        }
-      ]
-    },
-    {
-      "name": "Development & Testing",
-      "apps": [
-        {
-          "app": "Maya",
-          "version": "2016",
-          "desc": "",
-          "tools": ["fsmpipe", "maya2016", "substance1.2.3.0", "deadline8.0"],
-          "icon": "maya2016_icon.png"
-        },
-        {
-          "app": "Maya",
-          "version": "2016",
-          "desc": "MTOA 1.2.7.3",
-          "tools": ["fsmpipe", "maya2016", "mtoa1.2.7.3", "alshaders1.0.0rc14", "deadline8.0"],
+          "tools": ["base", "maya2016"],
           "icon": "maya2016_icon.png"
         },
         {
           "app": "Maya",
           "version": "2016",
           "desc": "V-Ray 3.5.2",
-          "tools": ["fsmpipe", "maya2016", "vray3.5.2", "deadline8.0"],
-          "icon": "maya2016_icon.png"
-        },
-        {
-          "app": "Maya",
-          "version": "2016.5",
-          "desc": "",
-          "tools": ["fsmpipe", "maya2016.5", "deadline8.0"],
-          "icon": "maya2016_icon.png"
-        },
-        {
-          "app": "Maya",
-          "version": "2016.5",
-          "desc": "MTOA 1.2.7.3",
-          "tools": ["fsmpipe", "maya2016.5", "mtoa1.2.7.3", "alshaders1.0.0rc19", "deadline8.0"],
-          "icon": "maya2016_icon.png"
-        },
-        {
-          "app": "Maya",
-          "version": "2016.5",
-          "desc": "V-Ray 3.5.2",
-          "tools": ["fsmpipe", "maya2016.5", "vray3.5.2", "deadline8.0"],
-          "icon": "maya2016_icon.png"
-        },
-        {
-          "app": "Maya",
-          "version": "2017",
-          "desc": "",
-          "tools": ["fsmpipe", "maya2017", "deadline8.0"],
-          "icon": "maya2017_icon.png"
-        },
-        {
-          "app": "Maya",
-          "version": "2017",
-          "desc": "MTOA 1.4.1.2",
-          "tools": ["fsmpipe", "maya2017", "mtoa1.4.1.2", "alshaders1.0.0rc19", "deadline8.0"],
-          "icon": "maya2017_icon.png"
-        },
-        {
-          "app": "Maya",
-          "version": "2017",
-          "desc": "V-Ray 3.4.6",
-          "tools": ["fsmpipe", "maya2017", "vray3.4.6", "deadline8.0"],
-          "icon": "maya2017_icon.png"
-        },
-        {
-          "app": "Houdini",
-          "version": "15.0",
-          "desc": "",
-          "tools": ["fsmpipe", "houdini15.0.459"],
-          "icon": "houdini_icon.png"
-        },
-        {
-          "app": "NukeX",
-          "version": "9.0v8",
-          "desc": "",
-          "tools": ["fsmpipe", "nuke9.0v8", "dndev"],
-          "icon": "nuke9_icon.png"
-        },
-        {
-          "app": "Nuke Studio",
-          "version": "9.0v8",
-          "desc": "",
-          "tools": ["fsmpipe", "nuke9.0v8", "dndev"],
-          "icon": "nuke9_icon.png"
-        }
-      ]
-    },
-    {
-      "name": "Redshift",
-      "apps": [
-        {
-          "app": "Maya",
-          "version": "2016",
-          "desc": "Redshift 2.0",
-          "tools": ["fsmpipe", "maya2016", "redshift2.0", "substance1.2.3.0", "deadline8.0"],
-          "icon": "maya2016_icon.png"
-        },
-        {
-          "app": "Maya",
-          "version": "2016",
-          "desc": "MTOA & Redshift 2.0",
-          "tools": ["fsmpipe", "maya2016", "mtoa1.2.7.3", "redshift2.0", "alshaders1.0.0rc14", "deadline8.0"],
-          "icon": "maya2016_icon.png"
-        },
-        {
-          "app": "Maya",
-          "version": "2016",
-          "desc": "V-Ray & Redshift 2.0",
-          "tools": ["fsmpipe", "maya2016", "vray3.4.6", "redshift2.0", "deadline8.0"],
-          "icon": "maya2016_icon.png"
-        },
-        {
-          "app": "Maya",
-          "version": "2016.5",
-          "desc": "Redshift 2.0",
-          "tools": ["fsmpipe", "maya2016.5", "redshift2.0", "substance1.2.3.0", "deadline8.0"],
-          "icon": "maya2016_icon.png"
-        },
-        {
-          "app": "Maya",
-          "version": "2017",
-          "desc": "Redshift 2.0",
-          "tools": ["fsmpipe", "maya2017", "redshift2.0", "deadline8.0"],
-          "icon": "maya2017_icon.png"
-        },
-        {
-          "app": "Maya",
-          "version": "2016",
-          "desc": "Redshift 2.5 beta",
-          "tools": ["fsmpipe", "maya2016", "redshift2.5", "deadline8.0"],
-          "icon": "maya2016_icon.png"
-        }
-      ]
-    },
-    {
-      "name": "Deadline 9 Testing",
-      "apps": [
-        {
-          "app": "Maya",
-          "version": "2016",
-          "desc": "",
-          "tools": ["fsmpipe", "maya2016", "substance1.2.2.0", "dndev", "deadline9.0"],
-          "icon": "maya2016_icon.png"
-        },
-        {
-          "app": "Maya",
-          "version": "2016",
-          "desc": "MTOA 1.2.7.3",
-          "tools": ["fsmpipe", "maya2016", "mtoa1.2.7.3", "alshaders1.0.0rc19", "dndev", "deadline9.0"],
-          "icon": "maya2016_icon.png"
-        },
-        {
-          "app": "Maya",
-          "version": "2016",
-          "desc": "V-Ray 3.4.6",
-          "tools": ["fsmpipe", "maya2016", "vray3.4.6", "dndev", "deadline9.0"],
+          "tools": ["base", "maya2016", "vray3.5.2"],
           "icon": "maya2016_icon.png"
         },
         {
           "app": "Maya",
           "version": "2016",
           "desc": "Redshift 2.0",
-          "tools": ["fsmpipe", "maya2016", "redshift2.0", "dndev", "deadline9.0"],
+          "tools": ["base", "maya2016", "redshift2.0"],
           "icon": "maya2016_icon.png"
         },
-        {
-          "app": "Maya",
-          "version": "2016.5",
-          "desc": "",
-          "tools": ["fsmpipe", "maya2016.5", "dndev", "deadline9.0"],
-          "icon": "maya2016_icon.png"
-        },
-        {
-          "app": "Maya",
-          "version": "2016.5",
-          "desc": "MTOA 1.2.7.3",
-          "tools": ["fsmpipe", "maya2016.5", "mtoa1.2.7.3", "alshaders1.0.0rc19", "dndev", "deadline9.0"],
-          "icon": "maya2016_icon.png"
-        },
-        {
-          "app": "Maya",
-          "version": "2016.5",
-          "desc": "V-Ray 3.4.6",
-          "tools": ["fsmpipe", "maya2016.5", "vray3.4.6", "dndev", "deadline9.0"],
-          "icon": "maya2016_icon.png"
-        },
-        {
-          "app": "Maya",
-          "version": "2016.5",
-          "desc": "Redshift 2.0",
-          "tools": ["fsmpipe", "maya2016.5", "redshift2.0", "dndev", "deadline9.0"],
-          "icon": "maya2016_icon.png"
-        },
-        {
-          "app": "Maya",
-          "version": "2017",
-          "desc": "",
-          "tools": ["fsmpipe", "maya2017", "dndev", "deadline9.0"],
-          "icon": "maya2017_icon.png"
-        },
-        {
-          "app": "Maya",
-          "version": "2017",
-          "desc": "MTOA 1.4.1.2",
-          "tools": ["fsmpipe", "maya2017", "mtoa1.4.1.2", "alshaders1.0.0rc19", "dndev", "deadline9.0"],
-          "icon": "maya2017_icon.png"
-        },
-        {
-          "app": "Maya",
-          "version": "2017",
-          "desc": "V-Ray 3.4.6",
-          "tools": ["fsmpipe", "maya2017", "vray3.4.6", "dndev", "deadline9.0"],
-          "icon": "maya2017_icon.png"
-        },
-        {
-          "app": "Maya",
-          "version": "2017",
-          "desc": "Redshift 2.0",
-          "tools": ["fsmpipe", "maya2017", "redshift2.0", "dndev", "deadline9.0"],
-          "icon": "maya2017_icon.png"
-        }
-      ]
-    },
-    {
-      "name": "Murdoch University",
-      "job": "MurdochUniversity_31789",
-      "apps": [
         {
           "app": "Maya",
           "version": "2016",
-          "desc": "Redshift 2.0",
-          "tools": ["fsmpipe", "maya2016", "redshift2.0", "deadline8.0"],
+          "desc": "Redshift 2.5",
+          "tools": ["base", "maya2016", "redshift2.5"],
           "icon": "maya2016_icon.png"
         },
         {
           "app": "Houdini",
-          "version": "15.0",
+          "version": "16.0",
           "desc": "",
-          "tools": ["fsmpipe", "houdini15.0.459"],
+          "tools": ["base", "houdini16.0"],
           "icon": "houdini_icon.png"
         },
         {
           "app": "Mari",
-          "version": "3.0v3",
+          "version": "3.1v1",
           "desc": "",
-          "tools": [
-            "fsmpipe",
-            "mari3.0v3"
-          ],
+          "tools": ["base", "mari3.0v3"],
           "icon": "mari3_icon.png"
         },
         {
-          "app": "NukeX",
-          "version": "6.3v4",
-          "desc": "",
-          "tools": [
-            "fsmpipe",
-            "nuke6.3v4"
-          ],
-          "icon": "nuke_icon.png"
-        },
-        {
-          "app": "NukeX",
+          "app": "Nuke",
           "version": "9.0v8",
           "desc": "",
-          "tools": [
-            "fsmpipe",
-            "nuke9.0v8"
-          ],
+          "tools": ["base", "nuke9.0v8"],
           "icon": "nuke9_icon.png"
+        }
+      ]
+    },
+    {
+      "name": "Utils",
+      "apps": [
+        {
+          "app": "VideoQ",
+          "version": "",
+          "desc": "",
+          "tools": ["base", "videoq"],
+          "icon": "maya2016_icon.png"
         }
       ]
     }
