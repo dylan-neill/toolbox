@@ -348,6 +348,7 @@ class ToolboxWindow(QtGui.QMainWindow):
     '''
     def on_item_clicked(self, item):
         self.update_tool_info(item.tool)
+        #self.update_packages(item.tool)
 
     def on_item_double_clicked(self, item):
         self.run_tool(item.tool)

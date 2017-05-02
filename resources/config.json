@@ -8,6 +8,7 @@
           "version": "2016",
           "desc": "",
           "tools": ["base", "maya2016"],
+          "command": "maya",
           "icon": "maya2016_icon.png"
         },
         {
@@ -15,6 +16,7 @@
           "version": "2016",
           "desc": "V-Ray 3.5.2",
           "tools": ["base", "maya2016", "vray3.5.2"],
+          "command": "maya",
           "icon": "maya2016_icon.png"
         },
         {
@@ -22,6 +24,7 @@
           "version": "2016",
           "desc": "Redshift 2.0",
           "tools": ["base", "maya2016", "redshift2.0"],
+          "command": "maya",
           "icon": "maya2016_icon.png"
         },
         {
@@ -29,6 +32,7 @@
           "version": "2016",
           "desc": "Redshift 2.5",
           "tools": ["base", "maya2016", "redshift2.5"],
+          "command": "maya",
           "icon": "maya2016_icon.png"
         },
         {
@@ -36,6 +40,7 @@
           "version": "16.0",
           "desc": "",
           "tools": ["base", "houdini16.0"],
+          "command": "houdini",
           "icon": "houdini_icon.png"
         },
         {
@@ -43,6 +48,7 @@
           "version": "3.1v1",
           "desc": "",
           "tools": ["base", "mari3.0v3"],
+          "command": "mari",
           "icon": "mari3_icon.png"
         },
         {
@@ -50,6 +56,7 @@
           "version": "9.0v8",
           "desc": "",
           "tools": ["base", "nuke9.0v8"],
+          "command": "nuke9.0",
           "icon": "nuke9_icon.png"
         }
       ]
@@ -62,6 +69,7 @@
           "version": "",
           "desc": "",
           "tools": ["base", "videoq"],
+          "command": "",
           "icon": "maya2016_icon.png"
         }
       ]
