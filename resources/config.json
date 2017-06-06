@@ -7,7 +7,7 @@
           "app": "Maya",
           "version": "2016",
           "desc": "",
-          "tools": ["base", "maya2016"],
+          "tools": ["base", "maya2016", "dnscripts"],
           "command": "maya",
           "icon": "maya2016_icon.png"
         },
@@ -15,7 +15,7 @@
           "app": "Maya",
           "version": "2016",
           "desc": "V-Ray 3.5.2",
-          "tools": ["base", "maya2016", "vray3.5.2"],
+          "tools": ["base", "maya2016", "vray3.5.2", "dnscripts"],
           "command": "maya",
           "icon": "maya2016_icon.png"
         },
@@ -23,7 +23,7 @@
           "app": "Maya",
           "version": "2016",
           "desc": "Redshift 2.0",
-          "tools": ["base", "maya2016", "redshift2.0"],
+          "tools": ["base", "maya2016", "redshift2.0", "dnscripts"],
           "command": "maya",
           "icon": "maya2016_icon.png"
         },
@@ -31,7 +31,7 @@
           "app": "Maya",
           "version": "2016",
           "desc": "Redshift 2.5",
-          "tools": ["base", "maya2016", "redshift2.5"],
+          "tools": ["base", "maya2016", "redshift2.5", "dnscripts"],
           "command": "maya",
           "icon": "maya2016_icon.png"
         },
