@@ -36,6 +36,22 @@
           "icon": "maya2016_icon.png"
         },
         {
+          "app": "Blender",
+          "version": "2.78",
+          "desc": "",
+          "tools": ["base", "blender2.78"],
+          "command": "blender",
+          "icon": "blender_icon.png"
+        },
+        {
+          "app": "Blender",
+          "version": "2.78",
+          "desc": "V-Ray 3.5.2",
+          "tools": ["base", "blendervray3.5.2"],
+          "command": "blender",
+          "icon": "blender_icon.png"
+        },
+        {
           "app": "Mari",
           "version": "3.1v1",
           "desc": "",
