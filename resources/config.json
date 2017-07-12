@@ -1,7 +1,7 @@
 {
   "toolsets": [
     {
-      "name": "Production",
+      "name": "3D",
       "apps": [
         {
           "app": "Maya",
@@ -14,24 +14,32 @@
         {
           "app": "Maya",
           "version": "2016",
-          "desc": "V-Ray 3.5.2",
-          "tools": ["base", "maya2016", "vray3.5.2", "dnscripts"],
-          "command": "maya",
-          "icon": "maya2016_icon.png"
-        },
-        {
-          "app": "Maya",
-          "version": "2016",
-          "desc": "Redshift 2.0",
-          "tools": ["base", "maya2016", "redshift2.0", "dnscripts"],
-          "command": "maya",
-          "icon": "maya2016_icon.png"
-        },
-        {
-          "app": "Maya",
-          "version": "2016",
           "desc": "Redshift 2.5",
           "tools": ["base", "maya2016", "redshift2.5", "dnscripts"],
+          "command": "maya",
+          "icon": "maya2016_icon.png"
+        },
+        {
+          "app": "Maya",
+          "version": "2016",
+          "desc": "V-Ray 3.5.3",
+          "tools": ["base", "maya2016", "vray3.5.3", "dnscripts"],
+          "command": "maya",
+          "icon": "maya2016_icon.png"
+        },
+        {
+          "app": "Maya",
+          "version": "2016",
+          "desc": "V-Ray 3.6 Beta",
+          "tools": ["base", "maya2016", "vray3.6.0beta", "dnscripts"],
+          "command": "maya",
+          "icon": "maya2016_icon.png"
+        },
+        {
+          "app": "Maya",
+          "version": "2016",
+          "desc": "V-Ray and Redshift",
+          "tools": ["base", "maya2016", "redshift2.5", "vray3.5.3", "dnscripts"],
           "command": "maya",
           "icon": "maya2016_icon.png"
         },
@@ -44,21 +52,27 @@
           "icon": "blender_icon.png"
         },
         {
-          "app": "Blender",
-          "version": "2.78",
-          "desc": "V-Ray 3.5.2",
-          "tools": ["base", "blendervray3.5.2"],
-          "command": "blender",
-          "icon": "blender_icon.png"
+          "app": "Houdini",
+          "version": "16.0",
+          "desc": "",
+          "tools": ["base", "houdini16.0.633"],
+          "command": "hindie",
+          "icon": "houdini_icon.png"
         },
         {
-          "app": "Mari",
-          "version": "3.1v1",
-          "desc": "",
-          "tools": ["base", "mari3.1v1"],
-          "command": "Mari3.1v1",
-          "icon": "mari3_icon.png"
-        },
+          "app": "Houdini",
+          "version": "16.0",
+          "desc": "Redshift 2.5",
+          "tools": ["base", "houdini16.0.633", "redshift2.5"],
+          "command": "hindie",
+          "icon": "houdini_icon.png"
+        }
+
+      ]
+    },
+    {
+      "name": "Compositing",
+      "apps": [
         {
           "app": "Nuke",
           "version": "9.0v8",
@@ -70,28 +84,15 @@
       ]
     },
     {
-      "name": "Utils",
+      "name": "Testing & Betas",
       "apps": [
         {
-          "app": "VideoQ",
-          "version": "",
+          "app": "Blender",
+          "version": "2.79 Test Build 1",
           "desc": "",
-          "tools": ["base", "videoq"],
-          "command": "",
-          "icon": "maya2016_icon.png"
-        }
-      ]
-    },
-    {
-      "name": "Testing",
-      "apps": [
-        {
-          "app": "Houdini",
-          "version": "16.0",
-          "desc": "",
-          "tools": ["base", "houdini16.0"],
-          "command": "houdinifx",
-          "icon": "houdini_icon.png"
+          "tools": ["base", "blender2.79"],
+          "command": "blender",
+          "icon": "blender_icon.png"
         }
       ]
     }
