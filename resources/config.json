@@ -22,6 +22,14 @@
         {
           "app": "Maya",
           "version": "2016",
+          "desc": "V-Ray 3.4.6",
+          "tools": ["base", "maya2016", "vray3.4.6", "dnscripts"],
+          "command": "maya",
+          "icon": "maya2016_icon.png"
+        },
+        {
+          "app": "Maya",
+          "version": "2016",
           "desc": "V-Ray 3.5.3",
           "tools": ["base", "maya2016", "vray3.5.3", "dnscripts"],
           "command": "maya",
@@ -30,24 +38,16 @@
         {
           "app": "Maya",
           "version": "2016",
-          "desc": "V-Ray 3.6 Beta",
-          "tools": ["base", "maya2016", "vray3.6.0beta", "dnscripts"],
-          "command": "maya",
-          "icon": "maya2016_icon.png"
-        },
-        {
-          "app": "Maya",
-          "version": "2016",
-          "desc": "V-Ray and Redshift",
-          "tools": ["base", "maya2016", "redshift2.5", "vray3.5.3", "dnscripts"],
+          "desc": "V-Ray 3.4 and Redshift",
+          "tools": ["base", "maya2016", "redshift2.5", "vray3.4.6", "dnscripts"],
           "command": "maya",
           "icon": "maya2016_icon.png"
         },
         {
           "app": "Blender",
-          "version": "2.78",
+          "version": "2.79",
           "desc": "",
-          "tools": ["base", "blender2.78"],
+          "tools": ["base", "blender2.79"],
           "command": "blender",
           "icon": "blender_icon.png"
         },
@@ -55,7 +55,7 @@
           "app": "Houdini",
           "version": "16.0",
           "desc": "",
-          "tools": ["base", "houdini16.0.633"],
+          "tools": ["base", "houdini16.0.671"],
           "command": "hindie",
           "icon": "houdini_icon.png"
         },
@@ -63,11 +63,10 @@
           "app": "Houdini",
           "version": "16.0",
           "desc": "Redshift 2.5",
-          "tools": ["base", "houdini16.0.633", "redshift2.5"],
+          "tools": ["base", "houdini16.0.671", "redshift2.5"],
           "command": "hindie",
           "icon": "houdini_icon.png"
         }
-
       ]
     },
     {
@@ -84,15 +83,92 @@
       ]
     },
     {
+      "name": "Game Dev",
+      "apps": [
+        {
+          "app": "Maya",
+          "version": "2016",
+          "desc": "UE4 Extensions",
+          "tools": ["base", "maya2016", "dnscripts", "unreal-art"],
+          "command": "maya",
+          "icon": "maya2016_icon.png"
+        },
+        {
+          "app": "Blender",
+          "version": "2.78",
+          "desc": "",
+          "tools": ["base", "blender2.78"],
+          "command": "blender",
+          "icon": "blender_icon.png"
+        },
+        {
+          "app": "Houdini",
+          "version": "16.0",
+          "desc": "",
+          "tools": ["base", "houdini16.0.671"],
+          "command": "hindie",
+          "icon": "houdini_icon.png"
+        },
+        {
+          "app": "Nuke",
+          "version": "9.0v8",
+          "desc": "",
+          "tools": ["base", "nuke9.0v8"],
+          "command": "nuke9.0",
+          "icon": "nuke9_icon.png"
+        }
+      ]
+    },
+    {
       "name": "Testing & Betas",
       "apps": [
         {
           "app": "Blender",
-          "version": "2.79 Test Build 1",
+          "version": "2.8 Pre-Alpha",
           "desc": "",
-          "tools": ["base", "blender2.79"],
+          "tools": ["base", "blender2.80"],
           "command": "blender",
           "icon": "blender_icon.png"
+        },
+        {
+          "app": "Maya",
+          "version": "2016",
+          "desc": "V-Ray 3.6",
+          "tools": ["base", "maya2016", "vray3.6.0", "dnscripts"],
+          "command": "maya",
+          "icon": "maya2016_icon.png"
+        },
+        {
+          "app": "Maya",
+          "version": "2018",
+          "desc": "",
+          "tools": ["base", "maya2018", "dnscripts"],
+          "command": "maya",
+          "icon": "maya2017_icon.png"
+        },
+        {
+          "app": "Maya",
+          "version": "2018",
+          "desc": "UE4 Rigging",
+          "tools": ["base", "maya2018", "dnscripts", "unreal-art"],
+          "command": "maya",
+          "icon": "maya2017_icon.png"
+        },
+        {
+          "app": "Maya",
+          "version": "2018",
+          "desc": "V-Ray 3.6",
+          "tools": ["base", "maya2018", "vray3.6.0", "dnscripts"],
+          "command": "maya",
+          "icon": "maya2017_icon.png"
+        },
+        {
+          "app": "Maya",
+          "version": "2018",
+          "desc": "Redshift 2.5",
+          "tools": ["base", "maya2018", "redshift2.5", "dnscripts"],
+          "command": "maya",
+          "icon": "maya2017_icon.png"
         }
       ]
     }
