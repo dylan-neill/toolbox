@@ -1,4 +1,4 @@
-from PySide import QtCore, QtGui
+from PySide2 import QtCore, QtGui, QtWidgets
 
 # Toolbox imports
 import globals
@@ -6,20 +6,20 @@ import resource
 import data
 import util
 
-class ToolWidget(QtGui.QListWidgetItem):
+class ToolWidget(QtWidgets.QListWidgetItem):
 
     def __init__(self, tool):
         super(ToolWidget, self).__init__()
 
         self.tool = tool
-        self.widget = QtGui.QWidget()
+        self.widget = QtWidgets.QWidget()
 
-        self.layout = QtGui.QVBoxLayout()
+        self.layout = QtWidgets.QVBoxLayout()
         self.layout.setSpacing(0)
         self.widget.setLayout(self.layout)
 
         pix = QtGui.QPixmap(resource.named(tool.icon, of_type="icon")).scaled(64,64, QtCore.Qt.KeepAspectRatio, QtCore.Qt.SmoothTransformation)
-        self.icon_label = QtGui.QLabel()
+        self.icon_label = QtWidgets.QLabel()
         self.icon_label.setPixmap(pix)
         self.icon_label.setAlignment(QtCore.Qt.AlignCenter)
         self.icon_label.setFixedSize(QtCore.QSize(64,64))
@@ -28,7 +28,7 @@ class ToolWidget(QtGui.QListWidgetItem):
 
         self.layout.addSpacing(5)
 
-        self.app_name_label = QtGui.QLabel(tool.title)
+        self.app_name_label = QtWidgets.QLabel(tool.title)
         font = QtGui.QFont()
         font.setPixelSize(16)
         self.app_name_label.setFont(font)
@@ -38,7 +38,7 @@ class ToolWidget(QtGui.QListWidgetItem):
 
         self.layout.addSpacing(2)
 
-        self.app_subtitle_label = QtGui.QLabel(tool.subtitle)
+        self.app_subtitle_label = QtWidgets.QLabel(tool.subtitle)
         font = QtGui.QFont()
         font.setPixelSize(12)
         self.app_subtitle_label.setFont(font)
@@ -54,7 +54,7 @@ class ToolWidget(QtGui.QListWidgetItem):
         self.layout.addStretch(1)
 
 
-class ToolboxWindow(QtGui.QMainWindow):
+class ToolboxWindow(QtWidgets.QMainWindow):
 
     main_font = QtGui.QFont()
     main_font_bold = QtGui.QFont()
@@ -65,7 +65,7 @@ class ToolboxWindow(QtGui.QMainWindow):
 
         self.dev = dev
 
-        self.blank_pixmap =  QtGui.QPixmap(64,64)
+        self.blank_pixmap = QtGui.QPixmap(64,64)
         self.blank_pixmap.fill(QtGui.QColor(60,60,60))
 
         pix = QtGui.QPixmap(resource.named('app_icon512.png', of_type="icon"))
@@ -87,49 +87,49 @@ class ToolboxWindow(QtGui.QMainWindow):
         self.setMinimumWidth(600)
         self.setMinimumHeight(300)
 
-        self.central_widget = QtGui.QWidget(self)
+        self.central_widget = QtWidgets.QWidget(self)
 
-        self.main_vertical_layout = QtGui.QVBoxLayout(self.central_widget)
-        self.main_columns_layout = QtGui.QHBoxLayout()
+        self.main_vertical_layout = QtWidgets.QVBoxLayout(self.central_widget)
+        self.main_columns_layout = QtWidgets.QHBoxLayout()
         self.main_vertical_layout.addLayout(self.main_columns_layout)
 
-        self.tools_layout = QtGui.QVBoxLayout()
+        self.tools_layout = QtWidgets.QVBoxLayout()
 
-        self.toolsets_layout = QtGui.QFormLayout()
+        self.toolsets_layout = QtWidgets.QFormLayout()
         self.tools_layout.addLayout(self.toolsets_layout)
 
-        self.toolsets_combo = QtGui.QComboBox(self)
+        self.toolsets_combo = QtWidgets.QComboBox(self)
         self.toolsets_combo.setFixedWidth(260)
         self.toolsets_layout.addRow("Toolsets", self.toolsets_combo)
 
-        self.tools_list = QtGui.QListWidget()
-        self.tools_list.setFlow(QtGui.QListView.LeftToRight)
+        self.tools_list = QtWidgets.QListWidget()
+        self.tools_list.setFlow(QtWidgets.QListView.LeftToRight)
         self.tools_list.setWrapping(True)
-        self.tools_list.setResizeMode(QtGui.QListView.Adjust)
+        self.tools_list.setResizeMode(QtWidgets.QListView.Adjust)
         self.tools_layout.addWidget(self.tools_list)
 
         self.main_columns_layout.addLayout(self.tools_layout)
         self.main_columns_layout.addSpacing(20)
 
-        self.details_layout = QtGui.QVBoxLayout()
+        self.details_layout = QtWidgets.QVBoxLayout()
         self.main_columns_layout.addLayout(self.details_layout)
 
         '''
         Icon and name
         '''
-        self.icon_layout = QtGui.QHBoxLayout()
+        self.icon_layout = QtWidgets.QHBoxLayout()
         self.details_layout.addLayout(self.icon_layout)
 
-        self.app_icon = QtGui.QLabel()
+        self.app_icon = QtWidgets.QLabel()
         self.app_icon.setPixmap(self.blank_pixmap)
         self.icon_layout.addWidget(self.app_icon)
         self.icon_layout.setAlignment(self.app_icon, QtCore.Qt.AlignLeft | QtCore.Qt.AlignTop)
 
-        self.app_name_layout = QtGui.QVBoxLayout()
+        self.app_name_layout = QtWidgets.QVBoxLayout()
         self.app_name_layout.setAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignTop)
         self.icon_layout.addLayout(self.app_name_layout)
 
-        self.app_name_label = QtGui.QLabel()
+        self.app_name_label = QtWidgets.QLabel()
         font = QtGui.QFont()
         font.setPixelSize(18)
         font.setBold(True)
@@ -139,7 +139,7 @@ class ToolboxWindow(QtGui.QMainWindow):
         self.app_name_label.setWordWrap(True)
         self.app_name_layout.addWidget(self.app_name_label)
 
-        self.details_app_subtitle = QtGui.QLabel()
+        self.details_app_subtitle = QtWidgets.QLabel()
         font = QtGui.QFont()
         font.setPixelSize(14)
         self.details_app_subtitle.setFont(font)
@@ -151,21 +151,21 @@ class ToolboxWindow(QtGui.QMainWindow):
         '''
         Menu Button
         '''
-        self.menu_button = QtGui.QPushButton()
+        self.menu_button = QtWidgets.QPushButton()
         self.menu_button.setFixedSize(23,23)
-        self.context_menu = QtGui.QMenu()
+        self.context_menu = QtWidgets.QMenu()
 
-        self.context_edit_action = QtGui.QAction('Edit...', self)
+        self.context_edit_action = QtWidgets.QAction('Edit...', self)
         self.context_menu.addAction(self.context_edit_action)
 
-        self.context_duplicate_action = QtGui.QAction('Duplicate', self)
+        self.context_duplicate_action = QtWidgets.QAction('Duplicate', self)
         self.context_menu.addAction(self.context_duplicate_action)
 
-        self.context_shortcut_action = QtGui.QAction('Create Desktop Shortcut', self)
+        self.context_shortcut_action = QtWidgets.QAction('Create Desktop Shortcut', self)
         self.context_shortcut_action.triggered.connect(self.on_shortcut_clicked)
         self.context_menu.addAction(self.context_shortcut_action)
 
-        self.context_delete_action = QtGui.QAction('Delete', self)
+        self.context_delete_action = QtWidgets.QAction('Delete', self)
         self.context_menu.addAction(self.context_delete_action)
 
         self.menu_button.setMenu(self.context_menu)
@@ -173,12 +173,12 @@ class ToolboxWindow(QtGui.QMainWindow):
         self.icon_layout.addWidget(self.menu_button)
         self.icon_layout.setAlignment(self.menu_button, QtCore.Qt.AlignRight | QtCore.Qt.AlignTop)
 
-        self.packages_label = QtGui.QLabel()
+        self.packages_label = QtWidgets.QLabel()
         self.packages_label.setText("Packages")
         self.packages_label.setEnabled(False)
         self.details_layout.addWidget(self.packages_label)
 
-        self.packages_table = QtGui.QTableWidget()
+        self.packages_table = QtWidgets.QTableWidget()
         self.packages_table.setFixedWidth(260)
         self.packages_table.setColumnCount(2)
         self.packages_table.setRowCount(0)
@@ -197,22 +197,22 @@ class ToolboxWindow(QtGui.QMainWindow):
         self.packages_table.setEnabled(False)
         self.details_layout.addWidget(self.packages_table)
 
-        self.buttons_layout = QtGui.QHBoxLayout()
+        self.buttons_layout = QtWidgets.QHBoxLayout()
         self.details_layout.addLayout(self.buttons_layout)
 
-        self.edit_button = QtGui.QPushButton()
+        self.edit_button = QtWidgets.QPushButton()
         self.edit_button.setText("Edit...")
         self.edit_button.setFixedWidth(52)
         self.edit_button.setEnabled(False)
         self.buttons_layout.addWidget(self.edit_button)
 
-        self.shell_button = QtGui.QPushButton()
+        self.shell_button = QtWidgets.QPushButton()
         self.shell_button.setText("Open Shell")
         self.shell_button.setFixedWidth(80)
         self.shell_button.setEnabled(False)
         self.buttons_layout.addWidget(self.shell_button)
 
-        self.launch_button = QtGui.QPushButton()
+        self.launch_button = QtWidgets.QPushButton()
         font = QtGui.QFont()
         font.setBold(True)
         self.launch_button.setFont(font)
@@ -225,9 +225,9 @@ class ToolboxWindow(QtGui.QMainWindow):
         self.launch_button.setEnabled(False)
         self.buttons_layout.addWidget(self.launch_button)
 
-        self.log_layout = QtGui.QHBoxLayout()
+        self.log_layout = QtWidgets.QHBoxLayout()
         self.main_vertical_layout.addLayout(self.log_layout)
-        self.log_text_box = QtGui.QTextEdit()
+        self.log_text_box = QtWidgets.QTextEdit()
         self.log_layout.addWidget(self.log_text_box)
         self.log_text_box.setReadOnly(True)
         self.log_text_box.setFixedHeight(64)
@@ -331,11 +331,11 @@ class ToolboxWindow(QtGui.QMainWindow):
         self.packages_table.setRowCount(len(package_dict.items()))
 
         for package, version in package_dict.iteritems():
-            new_item = QtGui.QTableWidgetItem()
+            new_item = QtWidgets.QTableWidgetItem()
             new_item.setText(package)
             new_item.setFlags(~QtCore.Qt.ItemIsEditable & ~QtCore.Qt.ItemIsSelectable)
             self.packages_table.setItem(row, 0, new_item)
-            new_item = QtGui.QTableWidgetItem()
+            new_item = QtWidgets.QTableWidgetItem()
             new_item.setText(version)
             new_item.setFlags(~QtCore.Qt.ItemIsEditable & ~QtCore.Qt.ItemIsSelectable)
             self.packages_table.setItem(row, 1, new_item)

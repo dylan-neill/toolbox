@@ -33,7 +33,7 @@ class ToolSet():
 
     def print_tool_names(self):
         for tool in self._tools:
-            print tool.title
+            print(tool.title)
 
     def add_tool(self, tool):
         self._tools.append(tool)

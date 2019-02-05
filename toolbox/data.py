@@ -29,7 +29,7 @@ def populate():
             if tool is not None:
                 toolset.add_tool(tool)
             else:
-                print "Error: couldn't find version: {0}".format(tool_dict['version'])
+                print("Error: couldn't find version: {0}".format(tool_dict['version']))
 
 
 def toolset_from_name(name):

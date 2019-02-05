@@ -1,5 +1,5 @@
 
-from PySide import QtCore, QtGui
+from PySide2 import QtCore, QtGui
 
 app_name = 'Toolbox'
 version = (0,4,2)

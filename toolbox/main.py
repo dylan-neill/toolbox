@@ -1,9 +1,9 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 # System imports
 import sys, os
 from optparse import OptionParser
-from PySide import QtCore, QtGui
+from PySide2 import QtCore, QtGui, QtWidgets
 import ctypes
 import platform
 
@@ -23,8 +23,8 @@ def main(dev=False):
 
     data.populate()
 
-    QtGui.QApplication.setStyle('plastique')
-    app = QtGui.QApplication(sys.argv)
+    QtWidgets.QApplication.setStyle('plastique')
+    app = QtWidgets.QApplication(sys.argv)
 
     main_window = ui.ToolboxWindow(dev=dev)
     main_window.setPalette(globals.palette())
