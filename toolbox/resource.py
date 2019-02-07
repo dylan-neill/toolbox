@@ -29,9 +29,9 @@ def named(filename, of_type=None):
 
 def python_command():
     if platform.system().lower() == 'windows':
-        return 'C:\\Python27\\pythonw.exe'
+        return 'pythonw.exe'
     else:
-        return 'python'
+        return 'python3'
 
 
 def get_pipe_python_root(dev=False):
@@ -65,3 +65,6 @@ def get_pipe_python_root(dev=False):
 def get_eco_command():
 
     return os.path.join(pipe_path, 'ecosystem', 'main.py')
+
+def rez_command():
+    return 'rez-env'

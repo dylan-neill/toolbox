@@ -1,7 +1,7 @@
 from PySide2 import QtCore, QtGui, QtWidgets
 
 # Toolbox imports
-import globals
+import globalvars
 import resource
 import data
 import util
@@ -77,7 +77,7 @@ class ToolboxWindow(QtWidgets.QMainWindow):
 
     def setup_ui(self):
 
-        app_name = globals.name_with_version()
+        app_name = globalvars.name_with_version()
 
         if self.dev:
             app_name += ' Development Mode'
@@ -406,18 +406,19 @@ class ToolboxWindow(QtWidgets.QMainWindow):
 
         python_exe = resource.python_command()
         script_path = resource.get_eco_command()
+        rez_command = resource.rez_command()
 
-        eco_wants = ','.join(tool.eco_wants)
+        rez_wants = ' '.join(tool.rez_wants)
 
-        command = '{0} {1} -t {2}'.format(python_exe, script_path, eco_wants)
+        command = '{0} {1}'.format(rez_command, rez_wants)
 
-        if tool.job is not None:
-            command += ' -j {0}'.format(tool.job)
+        #if tool.job is not None:
+        #    command += ' -j {0}'.format(tool.job)
 
         if open_shell:
-            command += ' -r "start cmd.exe"'
+            command += ' -- "start cmd.exe"'
         else:
-            command += ' -r {0}'.format(tool.command)
+            command += ' -- {0}'.format(tool.command)
 
         #print command
         #procid = len(self.process_list)

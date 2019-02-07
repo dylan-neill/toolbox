@@ -3,13 +3,13 @@ __author__ = 'dylan.neill'
 
 class Tool():
 
-    def __init__(self, name='', version='', subtitle='', eco_wants=None, icon='', command=''):
+    def __init__(self, name='', version='', subtitle='', rez_wants=None, icon='', command=''):
         self.name = name
         self.version = version
         self.subtitle = subtitle
-        if eco_wants is None:
-            eco_wants = []
-        self.eco_wants = eco_wants
+        if rez_wants is None:
+            rez_wants = []
+        self.rez_wants = rez_wants
         self.job = None
         self.icon = icon
         self.command = command

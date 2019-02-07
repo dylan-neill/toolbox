@@ -8,7 +8,7 @@ import ctypes
 import platform
 
 # Toolbox imports
-import globals
+import globalvars
 import resource
 import data
 import ui
@@ -23,11 +23,11 @@ def main(dev=False):
 
     data.populate()
 
-    QtWidgets.QApplication.setStyle('plastique')
+    QtWidgets.QApplication.setStyle('fusion')
     app = QtWidgets.QApplication(sys.argv)
 
     main_window = ui.ToolboxWindow(dev=dev)
-    main_window.setPalette(globals.palette())
+    main_window.setPalette(globalvars.palette())
     main_window.show()
     sys.exit(app.exec_())
 

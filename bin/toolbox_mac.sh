@@ -1,3 +1,3 @@
 #! /bin/sh
 
-python ../toolbox/main.py
+python3 ../toolbox/main.py
