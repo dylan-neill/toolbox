@@ -1,3 +1,3 @@
 #! /bin/sh
 
-python3 ../toolbox/main.py
+python3 `dirname "$0"`/../toolbox/main.py

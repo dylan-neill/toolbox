@@ -7,7 +7,7 @@
           "app": "Houdini",
           "version": "16.5",
           "desc": "Redshift",
-          "tools": ["houdini-16.5", "redshift"],
+          "tools": ["houdini-16.5", "redshift", "dnvfx", "deadline", "ffmpeg"],
           "command": "hindie",
           "icon": "houdini_icon.png"
         },
@@ -15,7 +15,7 @@
           "app": "Houdini",
           "version": "17.0",
           "desc": "Redshift",
-          "tools": ["houdini-17", "redshift"],
+          "tools": ["houdini-17", "redshift", "dnvfx", "deadline", "gamedevtools", "ffmpeg"],
           "command": "hindie",
           "icon": "houdini_icon.png"
         },
@@ -39,7 +39,7 @@
           "app": "Maya",
           "version": "2018",
           "desc": "Redshift",
-          "tools": ["maya-2018", "redshift", "dnscripts"],
+          "tools": ["maya-2018", "redshift", "dnvfx", "deadline"],
           "command": "maya",
           "icon": "maya2017_icon.png"
         },
@@ -47,7 +47,7 @@
           "app": "Maya",
           "version": "2018",
           "desc": "V-Ray",
-          "tools": ["maya-2018", "vray", "dnscripts"],
+          "tools": ["maya-2018", "vray", "dnvfx", "deadline"],
           "command": "maya",
           "icon": "maya2017_icon.png"
         },
@@ -55,7 +55,7 @@
           "app": "Nuke",
           "version": "9.0v8",
           "desc": "",
-          "tools": ["base", "nuke9.0v8"],
+          "tools": ["nuke9.0v8", "dnvfx", "deadline"],
           "command": "nuke9.0",
           "icon": "nuke9_icon.png"
         }

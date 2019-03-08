@@ -416,6 +416,7 @@ class ToolboxWindow(QtWidgets.QMainWindow):
         #    command += ' -j {0}'.format(tool.job)
 
         if open_shell:
+            # gnome-terminal --command=rez-env etc
             command += ' -- "start cmd.exe"'
         else:
             command += ' -- {0}'.format(tool.command)
