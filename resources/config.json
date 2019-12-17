@@ -1,63 +1,126 @@
 {
   "toolsets": [
     {
-      "name": "3D",
+      "name": "Production",
       "apps": [
         {
+          "app": "Blender",
+          "version": "2.81",
+          "desc": "",
+          "tools": ["blender-2.81", "dnvfx"],
+          "command": "blender",
+          "icon": "blender_icon.png"
+        },
+        {
           "app": "Houdini",
-          "version": "16.5",
-          "desc": "Redshift",
-          "tools": ["houdini-16.5", "redshift", "dnvfx", "deadline", "ffmpeg"],
+          "version": "17.5",
+          "desc": "Redshift 2.6",
+          "tools": ["houdini-17.5", "redshift-2.6", "dnvfx", "gamedevtools", "deadline", "ffmpeg"],
           "command": "hindie",
           "icon": "houdini_icon.png"
         },
         {
           "app": "Houdini",
-          "version": "17.0",
-          "desc": "Redshift",
-          "tools": ["houdini-17", "redshift", "dnvfx", "deadline", "gamedevtools", "ffmpeg"],
+          "version": "17.5",
+          "desc": "Redshift 3.0",
+          "tools": ["houdini-17", "redshift-3.0", "dnvfx", "deadline", "gamedevtools", "ffmpeg"],
+          "command": "hindie",
+          "icon": "houdini_icon.png"
+        }
+      ]
+    },
+    {
+      "name": "Testing",
+      "apps": [
+        {
+          "app": "Blender",
+          "version": "2.82",
+          "desc": "Alpha",
+          "tools": ["blender-2.82", "dnvfx"],
+          "command": "blender",
+          "icon": "blender_icon.png"
+        },
+        {
+          "app": "Houdini",
+          "version": "18.0",
+          "desc": "",
+          "tools": ["houdini-18", "dnvfx", "deadline", "sidefxlabs", "ffmpeg"],
           "command": "hindie",
           "icon": "houdini_icon.png"
         },
         {
+          "app": "Houdini",
+          "version": "18.0",
+          "desc": "Redshift 3.0",
+          "tools": ["houdini-18", "redshift-3.0", "dnvfx", "deadline", "sidefxlabs", "ffmpeg"],
+          "command": "hindie",
+          "icon": "houdini_icon.png"
+        }
+      ]
+    },
+    {
+      "name": "Development",
+      "apps": [
+        {
           "app": "Blender",
-          "version": "2.79",
-          "desc": "",
-          "tools": ["blender-2.79"],
+          "version": "2.80",
+          "desc": "Addon Dev",
+          "tools": ["blender-2.80", "blender_dev"],
           "command": "blender",
           "icon": "blender_icon.png"
         },
         {
           "app": "Blender",
-          "version": "2.80 Beta",
-          "desc": "",
-          "tools": ["blender-2.80beta"],
+          "version": "2.81",
+          "desc": "Addon Dev",
+          "tools": ["blender-2.81", "blender_dev"],
           "command": "blender",
           "icon": "blender_icon.png"
         },
         {
-          "app": "Maya",
-          "version": "2018",
-          "desc": "Redshift",
-          "tools": ["maya-2018", "redshift", "dnvfx", "deadline"],
-          "command": "maya",
-          "icon": "maya2017_icon.png"
-        },
+          "app": "Blender",
+          "version": "2.82",
+          "desc": "Addon Dev",
+          "tools": ["blender-2.82", "blender_dev"],
+          "command": "blender",
+          "icon": "blender_icon.png"
+        }
+      ]
+    },
+    {
+      "name": "Youtube",
+      "apps": [
         {
-          "app": "Maya",
-          "version": "2018",
-          "desc": "V-Ray",
-          "tools": ["maya-2018", "vray", "dnvfx", "deadline"],
-          "command": "maya",
-          "icon": "maya2017_icon.png"
-        },
-        {
-          "app": "Nuke",
-          "version": "9.0v8",
+          "app": "Blender",
+          "version": "2.81",
           "desc": "",
-          "tools": ["nuke9.0v8", "dnvfx", "deadline"],
-          "command": "nuke9.0",
-          "icon": "nuke9_icon.png"
+          "tools": ["blender-2.81", "blender_demo"],
+          "command": "blender",
+          "icon": "blender_icon.png"
+        },
+        {
+          "app": "Blender",
+          "version": "2.82",
+          "desc": "Alpha",
+          "tools": ["blender-2.82", "blender_demo"],
+          "command": "blender",
+          "icon": "blender_icon.png"
+        },
+        {
+          "app": "Houdini",
+          "version": "17.5",
+          "desc": "Redshift 2.6",
+          "tools": ["houdini-17.5", "redshift-2.6", "dnvfx", "gamedevtools", "deadline", "ffmpeg"],
+          "command": "hindie",
+          "icon": "houdini_icon.png"
+        },
+        {
+          "app": "Houdini",
+          "version": "17.5",
+          "desc": "Redshift 3.0",
+          "tools": ["houdini-17", "redshift-3.0", "dnvfx", "deadline", "gamedevtools", "ffmpeg"],
+          "command": "hindie",
+          "icon": "houdini_icon.png"
         }
       ]
     }

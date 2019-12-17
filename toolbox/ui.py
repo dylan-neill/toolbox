@@ -5,6 +5,7 @@ import globalvars
 import resource
 import data
 import util
+import platform
 
 class ToolWidget(QtWidgets.QListWidgetItem):
 
@@ -410,16 +411,19 @@ class ToolboxWindow(QtWidgets.QMainWindow):
 
         rez_wants = ' '.join(tool.rez_wants)
 
-        command = '{0} {1}'.format(rez_command, rez_wants)
+        rez_command = '{0} {1}'.format(rez_command, rez_wants)
+        command = ''
 
         #if tool.job is not None:
         #    command += ' -j {0}'.format(tool.job)
 
         if open_shell:
-            # gnome-terminal --command=rez-env etc
-            command += ' -- "start cmd.exe"'
+            if platform.system == 'windows':
+                command = '{0} -- "start cmd.exe"'.format(rez_command)
+            else:
+                command = 'gnome-terminal -- {0}'.format(rez_command)
         else:
-            command += ' -- {0}'.format(tool.command)
+            command = '{0} -- {1}'.format(rez_command, tool.command)
 
         #print command
         #procid = len(self.process_list)
