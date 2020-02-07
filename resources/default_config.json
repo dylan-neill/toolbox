@@ -35,8 +35,32 @@
         {
           "app": "Blender",
           "version": "2.82",
-          "desc": "Alpha",
+          "desc": "Beta",
           "tools": ["blender-2.82", "dnvfx"],
+          "command": "blender",
+          "icon": "blender_icon.png"
+        },
+        {
+          "app": "Blender",
+          "version": "2.83",
+          "desc": "Alpha",
+          "tools": ["blender-2.83", "dnvfx"],
+          "command": "blender",
+          "icon": "blender_icon.png"
+        },
+        {
+          "app": "Blender",
+          "version": "2.82",
+          "desc": "Bone Studios",
+          "tools": ["blender_bone", "dnvfx"],
+          "command": "blender",
+          "icon": "blender_icon.png"
+        },
+        {
+          "app": "Blender",
+          "version": "2.82",
+          "desc": "E-Cycles Latest",
+          "tools": ["blender_ecycles", "dnvfx"],
           "command": "blender",
           "icon": "blender_icon.png"
         },

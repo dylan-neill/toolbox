@@ -19,7 +19,7 @@ class ToolWidget(QtWidgets.QListWidgetItem):
         self.layout.setSpacing(0)
         self.widget.setLayout(self.layout)
 
-        pix = QtGui.QPixmap(resource.named(tool.icon, of_type="icon")).scaled(64,64, QtCore.Qt.KeepAspectRatio, QtCore.Qt.SmoothTransformation)
+        pix = QtGui.QPixmap(resource.icon_path(tool.icon)).scaled(64,64, QtCore.Qt.KeepAspectRatio, QtCore.Qt.SmoothTransformation)
         self.icon_label = QtWidgets.QLabel()
         self.icon_label.setPixmap(pix)
         self.icon_label.setAlignment(QtCore.Qt.AlignCenter)
@@ -69,7 +69,7 @@ class ToolboxWindow(QtWidgets.QMainWindow):
         self.blank_pixmap = QtGui.QPixmap(64,64)
         self.blank_pixmap.fill(QtGui.QColor(60,60,60))
 
-        pix = QtGui.QPixmap(resource.named('app_icon512.png', of_type="icon"))
+        pix = QtGui.QPixmap(resource.icon_path('app_icon512.png'))
         icon = QtGui.QIcon(pix)
         self.setWindowIcon(icon)
 
@@ -397,7 +397,7 @@ class ToolboxWindow(QtWidgets.QMainWindow):
         self.set_tool_info_enabled(True)
         self.app_name_label.setText(tool.title)
         self.details_app_subtitle.setText(tool.subtitle)
-        pix = QtGui.QPixmap(resource.named(tool.icon, of_type="icon"))\
+        pix = QtGui.QPixmap(resource.icon_path(tool.icon))\
                 .scaled(64,64, QtCore.Qt.KeepAspectRatio, QtCore.Qt.SmoothTransformation)
         self.app_icon.setPixmap(pix)
 
@@ -406,7 +406,6 @@ class ToolboxWindow(QtWidgets.QMainWindow):
         self.update_log('Running: %s %s...' % (tool.title, tool.subtitle))
 
         python_exe = resource.python_command()
-        script_path = resource.get_eco_command()
         rez_command = resource.rez_command()
 
         rez_wants = ' '.join(tool.rez_wants)

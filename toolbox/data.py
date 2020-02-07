@@ -15,9 +15,11 @@ def populate():
 
     global toolsets, apps
 
-    config_file = resource.named('config.json', of_type='json')
-    with open(config_file) as file_id:
-        config_data = json.load(file_id)
+    #config_file = resource.named('config.json', of_type='json')
+    #with open(config_file) as file_id:
+    #    config_data = json.load(file_id)
+
+    config_data = resource.load_config()
 
     for toolset_dict in config_data['toolsets']:
         toolset = ToolSet(toolset_dict['name'])
