@@ -3,7 +3,6 @@ import platform
 
 # Get parent folder of the folder containing this script file (ie the app root path)
 app_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-pipe_path = ''
 
 
 def named(filename, of_type=None):
@@ -33,38 +32,6 @@ def python_command():
     else:
         return 'python3'
 
-
-def get_pipe_python_root(dev=False):
-    """
-    Get the pipeline path, originally for finding ecosystem
-    :param dev: Are we using a development pipeline (Boolean)
-    :return: Pipeline path
-    """
-    global pipe_path
-
-    # if dev:
-    #     if platform.system().lower() == 'windows':
-    #         pipe_path = '//fsm.int/fsm/library/assets/pipeline/users/dylan.neill/dev/pipeline/python'
-    #     elif platform.system().lower() == 'darwin':
-    #         pipe_path = '/Volumes/library_assets/pipeline/pipeline/users/dylan.neill/dev/pipeline/python'
-    #     elif platform.system().lower() == 'linux':
-    #         pipe_path = '/fsm.int/fsm/library/assets/pipeline/pipeline/users/dylan.neill/dev/pipeline/python'
-    # else:
-    #     if platform.system().lower() == 'windows':
-    #         pipe_path = '//fsm.int/fsm/library/assets/pipeline/python'
-    #     if platform.system().lower() == 'darwin':
-    #         pipe_path = '/Volumes/library_assets/pipeline/python'
-    #     if platform.system().lower() == 'linux':
-    #         pipe_path = '/fsm.int/fsm/library/assets/pipeline/python'
-
-    pipe_path = 'C:/Users/dylan/dev/pipeline/python' # Hardcode hack for the time being
-    pipe_path = os.path.realpath(pipe_path)
-    return pipe_path
-
-
-def get_eco_command():
-
-    return os.path.join(pipe_path, 'ecosystem', 'main.py')
 
 def rez_command():
     return 'rez-env'

@@ -37,9 +37,4 @@ if __name__ == "__main__":
     parser.add_option("-d", "--dev", dest="dev", help="Enable development mode", default=False)
     (options, args) = parser.parse_args()
 
-    pipe_python = resource.get_pipe_python_root(options.dev)
-
-    if pipe_python not in sys.path:
-        sys.path.append(pipe_python)
-
     main(dev=options.dev)
