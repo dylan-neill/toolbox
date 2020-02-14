@@ -176,6 +176,8 @@ class ToolboxWindow(QtWidgets.QMainWindow):
         self.packages_label.setEnabled(False)
         self.details_layout.addWidget(self.packages_label)
 
+        # Package Info
+
         self.packages_table = QtWidgets.QTableWidget()
         self.packages_table.setFixedWidth(260)
         self.packages_table.setColumnCount(2)
@@ -398,6 +400,27 @@ class ToolboxWindow(QtWidgets.QMainWindow):
                 .scaled(64,64, QtCore.Qt.KeepAspectRatio, QtCore.Qt.SmoothTransformation)
         self.app_icon.setPixmap(pix)
 
+        self.packages_table.clearContents()
+        self.packages_table.setRowCount(len(tool.rez_wants))
+
+        row = 0
+
+        for want in tool.rez_wants:
+            tokens = want.split("-") # Can Rez use hyphens in package names?
+            item = QtWidgets.QTableWidgetItem()
+            item.setText(tokens[0])
+            self.packages_table.setItem(row, 0, item)
+
+            if len(tokens) > 0:
+                item = QtWidgets.QTableWidgetItem()
+                item.setText("-".join(tokens[1:]))
+                self.packages_table.setItem(row, 1, item)
+            
+            row += 1
+
+
+
+
 
     def run_tool(self, tool, open_shell=False):
 
@@ -432,6 +455,7 @@ class ToolboxWindow(QtWidgets.QMainWindow):
         #self.process_list[procid].readyRead.connect(lambda: self.update_proc_log(process))
         #self.process_list[procid].finished.connect(lambda: self.process_cleanup(process))
         #self.process_list[procid].start(command)
+
 
     def process_cleanup(self, process):
         self.update_log("Process finished")
