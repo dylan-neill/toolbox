@@ -16,7 +16,7 @@ class Tool():
 
     @property
     def title(self):
-        return "%s %s" % (self.name, self.version)
+        return "{0} {1}".format(self.name, self.version)
 
 
 class ToolSet():

@@ -61,10 +61,9 @@ class ToolboxWindow(QtWidgets.QMainWindow):
     main_font_bold = QtGui.QFont()
     main_font_bold.setBold(True)
 
-    def __init__(self, dev=False):
-        super(ToolboxWindow, self).__init__()
 
-        self.dev = dev
+    def __init__(self):
+        super(ToolboxWindow, self).__init__()
 
         self.blank_pixmap = QtGui.QPixmap(64,64)
         self.blank_pixmap.fill(QtGui.QColor(60,60,60))
@@ -76,12 +75,10 @@ class ToolboxWindow(QtWidgets.QMainWindow):
         self.setup_ui()
         self.setup_interaction()
 
+
     def setup_ui(self):
 
         app_name = globalvars.name_with_version()
-
-        if self.dev:
-            app_name += ' Development Mode'
 
         self.setWindowTitle(app_name)
 
@@ -250,8 +247,10 @@ class ToolboxWindow(QtWidgets.QMainWindow):
         self.update_toolset_list()
         self.update_tools()
 
+
     def update_proc_log(self, process):
         self.update_log(str(process.readAll()))
+
 
     def update_log(self, text):
         """
@@ -265,6 +264,7 @@ class ToolboxWindow(QtWidgets.QMainWindow):
         sb = self.log_text_box.verticalScrollBar()
         sb.setValue(sb.maximum())
 
+
     def setup_interaction(self):
         """
         Makes all UI interaction connections
@@ -276,6 +276,7 @@ class ToolboxWindow(QtWidgets.QMainWindow):
         self.launch_button.clicked.connect(self.on_launch_clicked)
         self.shell_button.clicked.connect(self.on_open_shell_clicked)
 
+
     def set_defaults(self):
         """
         Sets control defaults whether from prefs on disk or hardcoded defaults
@@ -284,16 +285,6 @@ class ToolboxWindow(QtWidgets.QMainWindow):
         self.setGeometry(200, 200, 845, 460)
         self.toolsets_combo.setCurrentIndex(0)
 
-    def disable_dev_controls(self):
-        """
-        Disables all controls currently under development if we're not in development mode
-        :return:
-        """
-        if not self.dev:
-            self.edit_button.setEnabled(False)
-            self.context_edit_action.setEnabled(False)
-            self.context_duplicate_action.setEnabled(False)
-            self.context_delete_action.setEnabled(False)
 
     def update_toolset_list(self, project_list=None):
         """
@@ -311,6 +302,7 @@ class ToolboxWindow(QtWidgets.QMainWindow):
             items.extend(project_list)
         self.toolsets_combo.addItems(items)
 
+
     def update_tools(self):
 
         self.tools_list.clear()
@@ -324,8 +316,9 @@ class ToolboxWindow(QtWidgets.QMainWindow):
                 self.tools_list.addItem(list_item)
                 self.tools_list.setItemWidget(list_item, list_item.widget)
 
+
     def update_packages(self, tool):
-        package_dict = {"fsmpipe": "", "maya": "2016", "mtoa": "1.2.7.0", "alshaders": "1.0.0rc14"}
+        package_dict = {}
 
         row = 0
         self.packages_table.clearContents()
@@ -344,6 +337,7 @@ class ToolboxWindow(QtWidgets.QMainWindow):
 
         self.packages_table.repaint()
 
+
     '''
     UI Interactions
     '''
@@ -351,18 +345,22 @@ class ToolboxWindow(QtWidgets.QMainWindow):
         self.update_tool_info(item.tool)
         #self.update_packages(item.tool)
 
+
     def on_item_double_clicked(self, item):
         self.run_tool(item.tool)
+
 
     def on_launch_clicked(self):
         items = self.tools_list.selectedItems()
         if len(items) > 0:
             self.run_tool(items[0].tool)
 
+
     def on_open_shell_clicked(self):
         items = self.tools_list.selectedItems()
         if len(items) > 0:
             self.run_tool(items[0].tool, open_shell=True)
+
 
     def on_shortcut_clicked(self):
         items = self.tools_list.selectedItems()
@@ -377,6 +375,7 @@ class ToolboxWindow(QtWidgets.QMainWindow):
 
             util.create_shortcut_on_desktop(name, target=target, arguments=arguments)
 
+
     def set_tool_info_enabled(self, enabled):
         if enabled is False:
             self.packages_table.clearContents()
@@ -390,8 +389,6 @@ class ToolboxWindow(QtWidgets.QMainWindow):
         self.shell_button.setEnabled(enabled)
         self.launch_button.setEnabled(enabled)
 
-        if enabled is True:
-            self.disable_dev_controls()
 
     def update_tool_info(self, tool):
         self.set_tool_info_enabled(True)
@@ -400,6 +397,7 @@ class ToolboxWindow(QtWidgets.QMainWindow):
         pix = QtGui.QPixmap(resource.icon_path(tool.icon))\
                 .scaled(64,64, QtCore.Qt.KeepAspectRatio, QtCore.Qt.SmoothTransformation)
         self.app_icon.setPixmap(pix)
+
 
     def run_tool(self, tool, open_shell=False):
 
