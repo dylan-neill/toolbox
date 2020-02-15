@@ -154,6 +154,7 @@ class ToolboxWindow(QtWidgets.QMainWindow):
         self.context_menu = QtWidgets.QMenu()
 
         self.context_edit_action = QtWidgets.QAction('Edit...', self)
+        self.context_edit_action.triggered.connect(self.on_edit_clicked)
         self.context_menu.addAction(self.context_edit_action)
 
         self.context_duplicate_action = QtWidgets.QAction('Duplicate', self)
@@ -371,11 +372,15 @@ class ToolboxWindow(QtWidgets.QMainWindow):
         if len(items) > 0:
             tool = items[0].tool
             target = resource.python_command()
-            arguments = resource.get_eco_command()
-            arguments += ' -t '
-            arguments += ','.join(tool.eco_wants)
-            arguments += ' -r ' + tool.command
-            name = "%s (%s)" % (tool.title, tool.subtitle)
+            arguments = "{rez} {wants} -- {command}".format(
+                rez=resource.get_rez_command(),
+                wants=" ".join(tool.rez_wants),
+                command=tool.command
+            )
+            if tool.subtitle:
+                name = "{title} ({subtitle})".format(title=tool.title, subtitle=tool.subtitle)
+            else:
+                name = tool.title
 
             util.create_shortcut_on_desktop(name, target=target, arguments=arguments)
 
