@@ -186,6 +186,7 @@ class ToolboxWindow(QtWidgets.QMainWindow):
         self.packages_table.verticalHeader().setVisible(False)
         self.packages_table.setColumnWidth(0, 140)
         self.packages_table.setColumnWidth(1, 116)
+        self.packages_table.setEditTriggers(QtWidgets.QTableWidget.NoEditTriggers)
         palette = QtGui.QPalette()
         brush = QtGui.QBrush(QtGui.QColor(65, 65, 65))
         brush.setStyle(QtCore.Qt.SolidPattern)
@@ -277,6 +278,7 @@ class ToolboxWindow(QtWidgets.QMainWindow):
         self.toolsets_combo.currentIndexChanged.connect(self.update_tools)
         self.launch_button.clicked.connect(self.on_launch_clicked)
         self.shell_button.clicked.connect(self.on_open_shell_clicked)
+        self.edit_button.clicked.connect(self.on_edit_clicked)
 
 
     def set_defaults(self):
@@ -378,6 +380,26 @@ class ToolboxWindow(QtWidgets.QMainWindow):
             util.create_shortcut_on_desktop(name, target=target, arguments=arguments)
 
 
+    def on_edit_clicked(self):
+        if self.packages_table.editTriggers() == QtWidgets.QTableWidget.NoEditTriggers:
+            self.packages_table.setEditTriggers(QtWidgets.QTableWidget.AllEditTriggers)
+            self.edit_button.setText("Save")
+            palette = QtGui.QPalette()
+            brush = QtGui.QBrush(QtGui.QColor(155,25,25))
+            brush.setStyle(QtCore.Qt.SolidPattern)
+            palette.setBrush(QtGui.QPalette.Button, brush)
+            self.edit_button.setPalette(palette)
+        else:
+            self.packages_table.setEditTriggers(QtWidgets.QTableWidget.NoEditTriggers)
+            self.edit_button.setText("Edit...")
+            palette = QtGui.QPalette()
+            brush = QtGui.QBrush(QtGui.QColor(80,80,80))
+            brush.setStyle(QtCore.Qt.SolidPattern)
+            palette.setBrush(QtGui.QPalette.Button, brush)
+            self.edit_button.setPalette(palette)
+        self.update()
+
+
     def set_tool_info_enabled(self, enabled):
         if enabled is False:
             self.packages_table.clearContents()
@@ -402,6 +424,11 @@ class ToolboxWindow(QtWidgets.QMainWindow):
 
         self.packages_table.clearContents()
         self.packages_table.setRowCount(len(tool.rez_wants))
+        
+        '''
+        not_editable_flag = QtCore.Qt.ItemFlags()
+        not_editable_flag != QtCore.Qt.ItemIsEditable
+        '''
 
         row = 0
 
