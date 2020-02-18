@@ -18,6 +18,8 @@ def load_config():
 
     if platform.system().lower() == 'linux':
         config_file = os.path.expanduser("~/.config/toolbox/config.json")
+    elif platform.system().lower() == 'windows':
+        config_file = os.path.expanduser("~/.config/toolbox/config.json")
 
     if not os.path.isfile(config_file):
         if not os.path.exists(os.path.dirname(config_file)):
