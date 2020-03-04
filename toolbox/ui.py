@@ -252,10 +252,6 @@ class ToolboxWindow(QtWidgets.QMainWindow):
         self.update_tools()
 
 
-    def update_proc_log(self, process):
-        self.update_log(str(process.readAll()))
-
-
     def update_log(self, text):
         """
         Adds a line of text to the log pane
@@ -451,7 +447,13 @@ class ToolboxWindow(QtWidgets.QMainWindow):
             row += 1
 
 
+    def update_proc_log(self, process):
+        self.update_log(str(process.readAll()))
 
+
+    def process_cleanup(self, process):
+        self.update_log("Process finished")
+        self.process_list.remove(process)
 
 
     def run_tool(self, tool, open_shell=False):
@@ -466,18 +468,14 @@ class ToolboxWindow(QtWidgets.QMainWindow):
         rez_command = '{0} {1}'.format(rez_command, rez_wants)
         command = ''
 
-        #if tool.job is not None:
-        #    command += ' -j {0}'.format(tool.job)
-
         if open_shell:
-            if platform.system == 'windows':
-                command = '{0} -- "start cmd.exe"'.format(rez_command)
+            if platform.system().lower() == 'windows':
+                command = 'start cmd.exe /k {0}'.format(rez_command)
             else:
                 command = 'gnome-terminal -- {0}'.format(rez_command)
         else:
             command = '{0} -- {1}'.format(rez_command, tool.command)
 
-        #print command
         #procid = len(self.process_list)
         self.update_log('Command: {0}'.format(command))
         process = QtCore.QProcess(self)
@@ -489,6 +487,3 @@ class ToolboxWindow(QtWidgets.QMainWindow):
         #self.process_list[procid].start(command)
 
 
-    def process_cleanup(self, process):
-        self.update_log("Process finished")
-        self.process_list.remove(process)

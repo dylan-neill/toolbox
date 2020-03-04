@@ -2,7 +2,7 @@
 from PySide2 import QtCore, QtGui
 
 app_name = 'Toolbox'
-version = (0,5,0)
+version = (0,5,2)
 
 def version_string():
     return 'v%d.%d.%d' % version
