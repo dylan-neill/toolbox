@@ -470,7 +470,8 @@ class ToolboxWindow(QtWidgets.QMainWindow):
 
         if open_shell:
             if platform.system().lower() == 'windows':
-                command = 'start cmd.exe /k {0}'.format(rez_command)
+                command = r'cmd.exe /C start cmd.exe /K {0}'.format(rez_command) # Super hack!
+                #command = r'start cmd.exe /K {0}'.format(rez_command)
             else:
                 command = 'gnome-terminal -- {0}'.format(rez_command)
         else:
@@ -479,6 +480,10 @@ class ToolboxWindow(QtWidgets.QMainWindow):
         #procid = len(self.process_list)
         self.update_log('Command: {0}'.format(command))
         process = QtCore.QProcess(self)
+        process.setWorkingDirectory("C:/")
+        #process.setProgram(r'c:\windows\system32\cmd.exe')
+        #process.setArguments('/k {0}'.format(rez_command))
+        #process.start()
         process.startDetached(command)
 
         #self.process_list.append(process)
