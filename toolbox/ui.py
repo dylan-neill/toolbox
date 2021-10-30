@@ -283,7 +283,13 @@ class ToolboxWindow(QtWidgets.QMainWindow):
         Sets control defaults whether from prefs on disk or hardcoded defaults
         :return:
         """
-        self.setGeometry(200, 200, 845, 460)
+        screen_rect = QtWidgets.QApplication.primaryScreen().geometry()
+        width = 845
+        height = 460
+        pos_x = (screen_rect.width()-width)/2
+        pos_y = (screen_rect.height()-height)/2
+        
+        self.setGeometry(pos_x, pos_y, width, height)
         self.toolsets_combo.setCurrentIndex(0)
 
 
