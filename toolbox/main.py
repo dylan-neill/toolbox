@@ -22,6 +22,7 @@ def main():
     data.populate()
 
     QtWidgets.QApplication.setStyle('fusion')
+    QtWidgets.QApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling)
     app = QtWidgets.QApplication(sys.argv)
 
     main_window = ui.ToolboxWindow()
