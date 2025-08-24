@@ -32,11 +32,11 @@ def load_config():
         default_config = os.path.join(app_path, "resources", "default_config.json")
         shutil.copy(default_config, config_file)
         if not os.path.isfile(config_file):
-            print("Error copying {0} to {1}".format(default_config, config_file))
+            print(f"Error copying {default_config} to {config_file}")
             return None
         else:
-            print("Default config created at: {0}".format(config_file))
-    
+            print(f"Default config created at: {config_file}")
+
     with open(config_file) as file_id:
         result = json.load(file_id)
     
@@ -48,7 +48,6 @@ def python_command():
         return 'pythonw.exe'
     else:
         return 'python3'
-
 
 def rez_command():
     return 'rez-env'

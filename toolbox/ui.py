@@ -1,8 +1,7 @@
 from PySide6 import QtCore, QtGui, QtWidgets
 
-# Toolbox imports
 import globalvars
-import resource
+import resources
 import data
 import util
 import platform
@@ -19,7 +18,7 @@ class ToolWidget(QtWidgets.QListWidgetItem):
         self.layout.setSpacing(0)
         self.widget.setLayout(self.layout)
 
-        pix = QtGui.QPixmap(resource.icon_path(tool.icon)).scaled(64,64, QtCore.Qt.KeepAspectRatio, QtCore.Qt.SmoothTransformation)
+        pix = QtGui.QPixmap(resources.icon_path(tool.icon)).scaled(64,64, QtCore.Qt.KeepAspectRatio, QtCore.Qt.SmoothTransformation)
         self.icon_label = QtWidgets.QLabel()
         self.icon_label.setPixmap(pix)
         self.icon_label.setAlignment(QtCore.Qt.AlignCenter)
@@ -45,10 +44,6 @@ class ToolWidget(QtWidgets.QListWidgetItem):
         self.app_subtitle_label.setFont(font)
         self.app_subtitle_label.setWordWrap(True)
         self.app_subtitle_label.setAlignment(QtCore.Qt.AlignHCenter | QtCore.Qt.AlignTop)
-        #self.app_subtitle_label.setFixedSize(QtCore.QSize(90,40))
-        #self.app_subtitle_label.setMinimumSize(QtCore.QSize(90,40))
-        #self.app_subtitle_label.setMaximumSize(QtCore.QSize(90,40))
-        #self.app_subtitle_label.setMaximumWidth(90)
 
         self.layout.addWidget(self.app_subtitle_label)
 
@@ -68,7 +63,7 @@ class ToolboxWindow(QtWidgets.QMainWindow):
         self.blank_pixmap = QtGui.QPixmap(64,64)
         self.blank_pixmap.fill(QtGui.QColor(60,60,60))
 
-        pix = QtGui.QPixmap(resource.icon_path('app_icon512.png'))
+        pix = QtGui.QPixmap(resources.icon_path('app_icon512.png'))
         icon = QtGui.QIcon(pix)
         self.setWindowIcon(icon)
 
@@ -370,17 +365,16 @@ class ToolboxWindow(QtWidgets.QMainWindow):
 
 
     def on_shortcut_clicked(self):
+        if platform.system().lower() != "windows":
+            self.update_log("Error: Creating desktop shortcuts is only supported on Windows")
+            return
         items = self.tools_list.selectedItems()
         if len(items) > 0:
             tool = items[0].tool
-            target = resource.python_command()
-            arguments = "{rez} {wants} -- {command}".format(
-                rez=resource.get_rez_command(),
-                wants=" ".join(tool.rez_wants),
-                command=tool.command
-            )
+            target = resources.python_command()
+            arguments = f"{resources.rez_command()} {tool.rez_wants} -- {tool.command}"
             if tool.subtitle:
-                name = "{title} ({subtitle})".format(title=tool.title, subtitle=tool.subtitle)
+                name = f"{tool.title} ({tool.subtitle})"
             else:
                 name = tool.title
 
@@ -425,17 +419,12 @@ class ToolboxWindow(QtWidgets.QMainWindow):
         self.set_tool_info_enabled(True)
         self.app_name_label.setText(tool.title)
         self.details_app_subtitle.setText(tool.subtitle)
-        pix = QtGui.QPixmap(resource.icon_path(tool.icon))\
+        pix = QtGui.QPixmap(resources.icon_path(tool.icon))\
                 .scaled(64,64, QtCore.Qt.KeepAspectRatio, QtCore.Qt.SmoothTransformation)
         self.app_icon.setPixmap(pix)
 
         self.packages_table.clearContents()
         self.packages_table.setRowCount(len(tool.rez_wants))
-        
-        '''
-        not_editable_flag = QtCore.Qt.ItemFlags()
-        not_editable_flag != QtCore.Qt.ItemIsEditable
-        '''
 
         row = 0
 
@@ -466,7 +455,7 @@ class ToolboxWindow(QtWidgets.QMainWindow):
 
         self.update_log(f'Running: {tool.title} {tool.subtitle}...')
 
-        rez_command = resource.rez_command()
+        rez_command = resources.rez_command()
 
         rez_wants = ' '.join(tool.rez_wants)
 

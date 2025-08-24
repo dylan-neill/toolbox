@@ -1,8 +1,6 @@
-import json
-
 from model import Tool, ToolSet
 
-import resource
+import resources
 
 apps = []
 toolsets = []
@@ -15,11 +13,7 @@ def populate():
 
     global toolsets, apps
 
-    #config_file = resource.named('config.json', of_type='json')
-    #with open(config_file) as file_id:
-    #    config_data = json.load(file_id)
-
-    config_data = resource.load_config()
+    config_data = resources.load_config()
 
     for toolset_dict in config_data['toolsets']:
         toolset = ToolSet(toolset_dict['name'])
@@ -31,7 +25,7 @@ def populate():
             if tool is not None:
                 toolset.add_tool(tool)
             else:
-                print("Error: couldn't find version: {0}".format(tool_dict['version']))
+                print(f"Error: couldn't find version: {tool_dict['version']}")
 
 
 def toolset_from_name(name):

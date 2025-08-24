@@ -5,10 +5,10 @@ app_name = 'Toolbox'
 version = (0,6,0)
 
 def version_string():
-    return 'v%d.%d.%d' % version
+    return f'v{version[0]}.{version[1]}.{version[2]}'
 
 def name_with_version():
-    return '%s %s' % (app_name, version_string())
+    return f'{app_name} {version_string()}'
 
 def palette():
     palette = QtGui.QPalette()

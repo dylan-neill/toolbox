@@ -1,8 +1,7 @@
 #!/usr/bin/python3
 
-import sys, os
+import sys
 from PySide6 import QtWidgets
-import ctypes
 import platform
 
 import globalvars
@@ -13,6 +12,7 @@ def main():
 
     # Set the app id in windows so we get a taskbar icon
     if platform.system().lower() == 'windows':
+        import ctypes
         myappid = 'dn.toolbox.1' # arbitrary string
         ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
 
