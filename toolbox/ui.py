@@ -1,4 +1,4 @@
-from PySide2 import QtCore, QtGui, QtWidgets
+from PySide6 import QtCore, QtGui, QtWidgets
 
 # Toolbox imports
 import globalvars
@@ -153,18 +153,18 @@ class ToolboxWindow(QtWidgets.QMainWindow):
         self.menu_button.setFixedSize(23,23)
         self.context_menu = QtWidgets.QMenu()
 
-        self.context_edit_action = QtWidgets.QAction('Edit...', self)
+        self.context_edit_action = QtGui.QAction('Edit...', self)
         self.context_edit_action.triggered.connect(self.on_edit_clicked)
         self.context_menu.addAction(self.context_edit_action)
 
-        self.context_duplicate_action = QtWidgets.QAction('Duplicate', self)
+        self.context_duplicate_action = QtGui.QAction('Duplicate', self)
         self.context_menu.addAction(self.context_duplicate_action)
 
-        self.context_shortcut_action = QtWidgets.QAction('Create Desktop Shortcut', self)
+        self.context_shortcut_action = QtGui.QAction('Create Desktop Shortcut', self)
         self.context_shortcut_action.triggered.connect(self.on_shortcut_clicked)
         self.context_menu.addAction(self.context_shortcut_action)
 
-        self.context_delete_action = QtWidgets.QAction('Delete', self)
+        self.context_delete_action = QtGui.QAction('Delete', self)
         self.context_menu.addAction(self.context_delete_action)
 
         self.menu_button.setMenu(self.context_menu)
@@ -259,7 +259,7 @@ class ToolboxWindow(QtWidgets.QMainWindow):
         :return:
         """
         cursor = self.log_text_box.textCursor()
-        cursor.movePosition(cursor.End)
+        cursor.movePosition(cursor.MoveOperation.End)
         cursor.insertText('\n' + text.rstrip('\n'))
         sb = self.log_text_box.verticalScrollBar()
         sb.setValue(sb.maximum())
@@ -464,37 +464,23 @@ class ToolboxWindow(QtWidgets.QMainWindow):
 
     def run_tool(self, tool, open_shell=False):
 
-        self.update_log('Running: %s %s...' % (tool.title, tool.subtitle))
+        self.update_log(f'Running: {tool.title} {tool.subtitle}...')
 
-        python_exe = resource.python_command()
         rez_command = resource.rez_command()
 
         rez_wants = ' '.join(tool.rez_wants)
 
-        rez_command = '{0} {1}'.format(rez_command, rez_wants)
+        rez_command = f'{rez_command} {rez_wants}'
         command = ''
 
         if open_shell:
             if platform.system().lower() == 'windows':
-                command = r'cmd.exe /C start cmd.exe /K {0}'.format(rez_command) # Super hack!
-                #command = r'start cmd.exe /K {0}'.format(rez_command)
+                command = f'cmd.exe /C start cmd.exe /K {rez_command}' # Super hack!
             else:
-                command = 'gnome-terminal -- {0}'.format(rez_command)
+                command = f'gnome-terminal -- {rez_command}'
         else:
-            command = '{0} -- {1}'.format(rez_command, tool.command)
+            command = f'{rez_command} -- {tool.command}'
 
-        #procid = len(self.process_list)
-        self.update_log('Command: {0}'.format(command))
+        self.update_log(f'Command: {command}')
         process = QtCore.QProcess(self)
-        process.setWorkingDirectory("C:/")
-        #process.setProgram(r'c:\windows\system32\cmd.exe')
-        #process.setArguments('/k {0}'.format(rez_command))
-        #process.start()
-        process.startDetached(command)
-
-        #self.process_list.append(process)
-        #self.process_list[procid].readyRead.connect(lambda: self.update_proc_log(process))
-        #self.process_list[procid].finished.connect(lambda: self.process_cleanup(process))
-        #self.process_list[procid].start(command)
-
-
+        process.startCommand(command)

@@ -1,16 +1,13 @@
 #!/usr/bin/python3
 
 import sys, os
-from optparse import OptionParser
-from PySide2 import QtCore, QtGui, QtWidgets
+from PySide6 import QtWidgets
 import ctypes
 import platform
 
 import globalvars
-import resource
 import data
 import ui
-
 
 def main():
 
@@ -22,7 +19,6 @@ def main():
     data.populate()
 
     QtWidgets.QApplication.setStyle('fusion')
-    QtWidgets.QApplication.setAttribute(QtCore.Qt.AA_EnableHighDpiScaling)
     app = QtWidgets.QApplication(sys.argv)
 
     main_window = ui.ToolboxWindow()
@@ -32,11 +28,4 @@ def main():
 
 
 if __name__ == "__main__":
-
-    '''
-    parser = OptionParser()
-    parser.add_option("-d", "--dev", dest="dev", help="Enable development mode", default=False)
-    (options, args) = parser.parse_args()
-    '''
-
     main()
