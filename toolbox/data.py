@@ -1,6 +1,6 @@
-from model import Tool, ToolSet
+from .model import Tool, ToolSet
 
-import resources
+from . import resources
 
 apps = []
 toolsets = []
@@ -16,7 +16,7 @@ def populate():
     config_data = resources.load_config()
 
     for toolset_dict in config_data['toolsets']:
-        toolset = ToolSet(toolset_dict['name'])
+        toolset = ToolSet(toolset_dict['name'], "", "", [])
         toolsets.append(toolset)
         if 'job' in toolset_dict:
             toolset.job = toolset_dict['job']

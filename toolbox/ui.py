@@ -1,10 +1,10 @@
+import platform
 from PySide6 import QtCore, QtGui, QtWidgets
 
-import globalvars
-import resources
-import data
-import util
-import platform
+from . import globalvars
+from . import resources
+from . import data
+from . import util
 
 class ToolWidget(QtWidgets.QListWidgetItem):
 

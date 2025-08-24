@@ -1,39 +1,32 @@
-__author__ = 'dylan.neill'
+from dataclasses import dataclass
 
-
+@dataclass
 class Tool():
-
-    def __init__(self, name='', version='', subtitle='', rez_wants=None, icon='', command=''):
-        self.name = name
-        self.version = version
-        self.subtitle = subtitle
-        if rez_wants is None:
-            rez_wants = []
-        self.rez_wants = rez_wants
-        self.job = None
-        self.icon = icon
-        self.command = command
+    name: str
+    version: str
+    subtitle: str
+    rez_wants: list
+    icon: str
+    command: str
 
     @property
     def title(self):
-        return "{0} {1}".format(self.name, self.version)
+        return f"{self.name} {self.version}"
 
-
+@dataclass
 class ToolSet():
-
-    def __init__(self, name):
-        self.name = name
-        self.description = ''
-        self.job = None
-        self._tools = []
+    name: str
+    description: str
+    job: str
+    _tools: list
 
     @property
     def tools(self):
         return self._tools
 
-    def print_tool_names(self):
-        for tool in self._tools:
-            print(tool.title)
+    # def print_tool_names(self):
+    #     for tool in self._tools:
+    #         print(tool.title)
 
     def add_tool(self, tool):
         self._tools.append(tool)

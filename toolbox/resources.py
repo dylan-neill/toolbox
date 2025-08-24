@@ -4,10 +4,10 @@ import shutil
 import json
 
 # Get parent folder of the folder containing this script file (ie the app root path)
-app_path = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
+app_path = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
 
 def icon_path(icon):
+    print("Icon path:", os.path.join(app_path, "resources", "icons", icon))
     return os.path.join(app_path, "resources", "icons", icon)
 
 
