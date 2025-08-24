@@ -1,3 +1,3 @@
 #! /bin/sh
 
-python3 ../toolbox/main.py
+../venv/bin/python3 ../toolbox/main.py

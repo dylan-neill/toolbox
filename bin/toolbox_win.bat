@@ -1,1 +1,1 @@
-python ..\toolbox\main.py
+..\venv\Scripts\python.exe ..\toolbox\main.py
