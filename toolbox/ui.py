@@ -63,6 +63,7 @@ class ToolboxWindow(QtWidgets.QMainWindow):
         self.blank_pixmap = QtGui.QPixmap(64,64)
         self.blank_pixmap.fill(QtGui.QColor(60,60,60))
         self.current_tool = None
+        self._suppress_package_change = False
 
         pix = QtGui.QPixmap(resources.icon_path('app_icon512.png'))
         icon = QtGui.QIcon(pix)
@@ -177,12 +178,13 @@ class ToolboxWindow(QtWidgets.QMainWindow):
 
         self.packages_table = QtWidgets.QTableWidget()
         self.packages_table.setFixedWidth(260)
-        self.packages_table.setColumnCount(2)
+        self.packages_table.setColumnCount(3)
         self.packages_table.setRowCount(0)
-        self.packages_table.setHorizontalHeaderLabels(["Package", "Version"])
+        self.packages_table.setHorizontalHeaderLabels(["Package", "Version", ""])
         self.packages_table.verticalHeader().setVisible(False)
-        self.packages_table.setColumnWidth(0, 140)
-        self.packages_table.setColumnWidth(1, 116)
+        self.packages_table.setColumnWidth(0, 120)
+        self.packages_table.setColumnWidth(1, 100)
+        self.packages_table.setColumnWidth(2, 30)
         self.packages_table.setEditTriggers(QtWidgets.QTableWidget.NoEditTriggers)
         palette = QtGui.QPalette()
         brush = QtGui.QBrush(QtGui.QColor(65, 65, 65))
@@ -272,6 +274,7 @@ class ToolboxWindow(QtWidgets.QMainWindow):
         self.launch_button.clicked.connect(self.on_launch_clicked)
         self.shell_button.clicked.connect(self.on_open_shell_clicked)
         self.edit_button.clicked.connect(self.on_edit_clicked)
+        self.packages_table.itemChanged.connect(self.on_package_item_changed)
 
 
     def set_defaults(self):
@@ -391,6 +394,8 @@ class ToolboxWindow(QtWidgets.QMainWindow):
             brush.setStyle(QtCore.Qt.SolidPattern)
             palette.setBrush(QtGui.QPalette.Button, brush)
             self.edit_button.setPalette(palette)
+            if self.current_tool is not None:
+                self.populate_packages_table(self.current_tool, editing=True)
         else:
             if self.current_tool is None:
                 self.update_log("Error: No tool selected")
@@ -409,6 +414,7 @@ class ToolboxWindow(QtWidgets.QMainWindow):
             brush.setStyle(QtCore.Qt.SolidPattern)
             palette.setBrush(QtGui.QPalette.Button, brush)
             self.edit_button.setPalette(palette)
+            self.populate_packages_table(self.current_tool, editing=False)
             self.update_log("Packages saved")
         self.update()
 
@@ -436,13 +442,25 @@ class ToolboxWindow(QtWidgets.QMainWindow):
                 .scaled(64,64, QtCore.Qt.KeepAspectRatio, QtCore.Qt.SmoothTransformation)
         self.app_icon.setPixmap(pix)
 
-        self.packages_table.clearContents()
-        self.packages_table.setRowCount(len(tool.rez_wants))
+        self.populate_packages_table(tool, editing=False)
 
-        row = 0
+
+    def is_editing_packages(self):
+        return self.packages_table.editTriggers() != QtWidgets.QTableWidget.NoEditTriggers
+
+
+    def populate_packages_table(self, tool, editing=False):
+        self._suppress_package_change = True
+        self.packages_table.blockSignals(True)
+        self.packages_table.setColumnHidden(2, not editing)
+        self.packages_table.clearContents()
+        self.packages_table.setRowCount(0)
 
         for want in tool.rez_wants:
             tokens = want.split("-") # Can Rez use hyphens in package names?
+            row = self.packages_table.rowCount()
+            self.packages_table.insertRow(row)
+
             item = QtWidgets.QTableWidgetItem()
             item.setText(tokens[0])
             self.packages_table.setItem(row, 0, item)
@@ -451,8 +469,57 @@ class ToolboxWindow(QtWidgets.QMainWindow):
                 item = QtWidgets.QTableWidgetItem()
                 item.setText("-".join(tokens[1:]))
                 self.packages_table.setItem(row, 1, item)
-            
-            row += 1
+
+            if editing:
+                self.add_remove_button(row)
+
+        if editing:
+            self.add_blank_package_row()
+        else:
+            self.clear_remove_buttons()
+
+        self.packages_table.blockSignals(False)
+        self._suppress_package_change = False
+
+
+    def add_blank_package_row(self):
+        row = self.packages_table.rowCount()
+        self.packages_table.insertRow(row)
+        self.packages_table.setItem(row, 0, QtWidgets.QTableWidgetItem())
+        self.packages_table.setItem(row, 1, QtWidgets.QTableWidgetItem())
+        self.add_remove_button(row)
+
+
+    def add_remove_button(self, row):
+        button = QtWidgets.QPushButton("-")
+        button.setFixedSize(22, 20)
+        button.clicked.connect(self.on_remove_row_clicked)
+        self.packages_table.setCellWidget(row, 2, button)
+
+
+    def clear_remove_buttons(self):
+        for row in range(self.packages_table.rowCount()):
+            self.packages_table.setCellWidget(row, 2, None)
+
+
+    def ensure_blank_row(self):
+        if not self.is_editing_packages():
+            return
+
+        if self.packages_table.rowCount() == 0:
+            self.add_blank_package_row()
+            return
+
+        last_row = self.packages_table.rowCount() - 1
+        package_item = self.packages_table.item(last_row, 0)
+        version_item = self.packages_table.item(last_row, 1)
+        package = package_item.text().strip() if package_item is not None else ""
+        version = version_item.text().strip() if version_item is not None else ""
+
+        if package == "" and version == "":
+            return
+
+        self.add_blank_package_row()
 
 
     def read_packages_table(self):
@@ -472,6 +539,43 @@ class ToolboxWindow(QtWidgets.QMainWindow):
                 rez_wants.append(f"{package}-{version}")
 
         return rez_wants
+
+
+    def on_remove_row_clicked(self):
+        if not self.is_editing_packages():
+            self.update_log("Enable Edit to remove packages")
+            return
+
+        button = self.sender()
+        if button is None:
+            return
+
+        for row in range(self.packages_table.rowCount()):
+            if self.packages_table.cellWidget(row, 2) is button:
+                self.packages_table.removeRow(row)
+                self.ensure_blank_row()
+                return
+
+
+    def on_package_item_changed(self, item):
+        if self._suppress_package_change or not self.is_editing_packages():
+            return
+
+        last_row = self.packages_table.rowCount() - 1
+        if item.row() != last_row:
+            return
+
+        package_item = self.packages_table.item(last_row, 0)
+        version_item = self.packages_table.item(last_row, 1)
+        package = package_item.text().strip() if package_item is not None else ""
+        version = version_item.text().strip() if version_item is not None else ""
+
+        if package == "" and version == "":
+            return
+
+        self._suppress_package_change = True
+        self.add_blank_package_row()
+        self._suppress_package_change = False
 
 
     def update_proc_log(self, process):
