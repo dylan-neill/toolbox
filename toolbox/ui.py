@@ -62,6 +62,7 @@ class ToolboxWindow(QtWidgets.QMainWindow):
 
         self.blank_pixmap = QtGui.QPixmap(64,64)
         self.blank_pixmap.fill(QtGui.QColor(60,60,60))
+        self.current_tool = None
 
         pix = QtGui.QPixmap(resources.icon_path('app_icon512.png'))
         icon = QtGui.QIcon(pix)
@@ -391,6 +392,16 @@ class ToolboxWindow(QtWidgets.QMainWindow):
             palette.setBrush(QtGui.QPalette.Button, brush)
             self.edit_button.setPalette(palette)
         else:
+            if self.current_tool is None:
+                self.update_log("Error: No tool selected")
+                return
+
+            rez_wants = self.read_packages_table()
+            success, error_message = data.update_tool_packages(self.current_tool, rez_wants)
+            if not success:
+                self.update_log(f"Error saving packages: {error_message}")
+                return
+
             self.packages_table.setEditTriggers(QtWidgets.QTableWidget.NoEditTriggers)
             self.edit_button.setText("Edit...")
             palette = QtGui.QPalette()
@@ -398,6 +409,7 @@ class ToolboxWindow(QtWidgets.QMainWindow):
             brush.setStyle(QtCore.Qt.SolidPattern)
             palette.setBrush(QtGui.QPalette.Button, brush)
             self.edit_button.setPalette(palette)
+            self.update_log("Packages saved")
         self.update()
 
 
@@ -416,6 +428,7 @@ class ToolboxWindow(QtWidgets.QMainWindow):
 
 
     def update_tool_info(self, tool):
+        self.current_tool = tool
         self.set_tool_info_enabled(True)
         self.app_name_label.setText(tool.title)
         self.details_app_subtitle.setText(tool.subtitle)
@@ -440,6 +453,25 @@ class ToolboxWindow(QtWidgets.QMainWindow):
                 self.packages_table.setItem(row, 1, item)
             
             row += 1
+
+
+    def read_packages_table(self):
+        rez_wants = []
+        for row in range(self.packages_table.rowCount()):
+            package_item = self.packages_table.item(row, 0)
+            version_item = self.packages_table.item(row, 1)
+            package = package_item.text().strip() if package_item is not None else ""
+            version = version_item.text().strip() if version_item is not None else ""
+
+            if package == "":
+                continue
+
+            if version == "":
+                rez_wants.append(package)
+            else:
+                rez_wants.append(f"{package}-{version}")
+
+        return rez_wants
 
 
     def update_proc_log(self, process):

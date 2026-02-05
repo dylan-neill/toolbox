@@ -8,6 +8,8 @@ class Tool():
     rez_wants: list
     icon: str
     command: str
+    config_toolset_index: int = -1
+    config_app_index: int = -1
 
     @property
     def title(self):
