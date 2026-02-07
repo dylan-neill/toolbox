@@ -1,10 +1,208 @@
 import platform
 from PySide6 import QtCore, QtGui, QtWidgets
 
-from . import globalvars
 from . import resources
-from . import data
+from . import core
 from . import util
+
+def get_palette():
+    palette = QtGui.QPalette()
+
+    brush = QtGui.QBrush(QtGui.QColor(255, 255, 255))
+    brush.setStyle(QtCore.Qt.SolidPattern)
+    palette.setBrush(QtGui.QPalette.Active, QtGui.QPalette.WindowText, brush)
+    
+    brush = QtGui.QBrush(QtGui.QColor(80, 80, 80))
+    brush.setStyle(QtCore.Qt.SolidPattern)
+    palette.setBrush(QtGui.QPalette.Active, QtGui.QPalette.Button, brush)
+    
+    brush = QtGui.QBrush(QtGui.QColor(75, 75, 75))
+    brush.setStyle(QtCore.Qt.SolidPattern)
+    palette.setBrush(QtGui.QPalette.Active, QtGui.QPalette.Light, brush)
+    
+    brush = QtGui.QBrush(QtGui.QColor(62, 62, 62))
+    brush.setStyle(QtCore.Qt.SolidPattern)
+    palette.setBrush(QtGui.QPalette.Active, QtGui.QPalette.Midlight, brush)
+    
+    brush = QtGui.QBrush(QtGui.QColor(25, 25, 25))
+    brush.setStyle(QtCore.Qt.SolidPattern)
+    palette.setBrush(QtGui.QPalette.Active, QtGui.QPalette.Dark, brush)
+    
+    brush = QtGui.QBrush(QtGui.QColor(33, 33, 33))
+    brush.setStyle(QtCore.Qt.SolidPattern)
+    palette.setBrush(QtGui.QPalette.Active, QtGui.QPalette.Mid, brush)
+    
+    brush = QtGui.QBrush(QtGui.QColor(245, 245, 245))
+    brush.setStyle(QtCore.Qt.SolidPattern)
+    palette.setBrush(QtGui.QPalette.Active, QtGui.QPalette.Text, brush)
+    
+    brush = QtGui.QBrush(QtGui.QColor(255, 255, 255))
+    brush.setStyle(QtCore.Qt.SolidPattern)
+    palette.setBrush(QtGui.QPalette.Active, QtGui.QPalette.BrightText, brush)
+    
+    brush = QtGui.QBrush(QtGui.QColor(255, 255, 255))
+    brush.setStyle(QtCore.Qt.SolidPattern)
+    palette.setBrush(QtGui.QPalette.Active, QtGui.QPalette.ButtonText, brush)
+    
+    brush = QtGui.QBrush(QtGui.QColor(100, 100, 100))
+    brush.setStyle(QtCore.Qt.SolidPattern)
+    palette.setBrush(QtGui.QPalette.Active, QtGui.QPalette.Base, brush)
+    
+    brush = QtGui.QBrush(QtGui.QColor(50, 50, 50))
+    brush.setStyle(QtCore.Qt.SolidPattern)
+    palette.setBrush(QtGui.QPalette.Active, QtGui.QPalette.Window, brush)
+    
+    brush = QtGui.QBrush(QtGui.QColor(0, 0, 0))
+    brush.setStyle(QtCore.Qt.SolidPattern)
+    palette.setBrush(QtGui.QPalette.Active, QtGui.QPalette.Shadow, brush)
+    
+    brush = QtGui.QBrush(QtGui.QColor(247, 147, 30))
+    brush.setStyle(QtCore.Qt.SolidPattern)
+    palette.setBrush(QtGui.QPalette.Active, QtGui.QPalette.Highlight, brush)
+    
+    brush = QtGui.QBrush(QtGui.QColor(25, 25, 25))
+    brush.setStyle(QtCore.Qt.SolidPattern)
+    palette.setBrush(QtGui.QPalette.Active, QtGui.QPalette.AlternateBase, brush)
+    
+    brush = QtGui.QBrush(QtGui.QColor(255, 255, 220))
+    brush.setStyle(QtCore.Qt.SolidPattern)
+    palette.setBrush(QtGui.QPalette.Active, QtGui.QPalette.ToolTipBase, brush)
+    
+    brush = QtGui.QBrush(QtGui.QColor(0, 0, 0))
+    brush.setStyle(QtCore.Qt.SolidPattern)
+    palette.setBrush(QtGui.QPalette.Active, QtGui.QPalette.ToolTipText, brush)
+    
+    # Inactive
+    brush = QtGui.QBrush(QtGui.QColor(255, 255, 255))
+    brush.setStyle(QtCore.Qt.SolidPattern)
+    palette.setBrush(QtGui.QPalette.Inactive, QtGui.QPalette.WindowText, brush)
+    
+    brush = QtGui.QBrush(QtGui.QColor(80, 80, 80))
+    brush.setStyle(QtCore.Qt.SolidPattern)
+    palette.setBrush(QtGui.QPalette.Inactive, QtGui.QPalette.Button, brush)
+    
+    brush = QtGui.QBrush(QtGui.QColor(75, 75, 75))
+    brush.setStyle(QtCore.Qt.SolidPattern)
+    palette.setBrush(QtGui.QPalette.Inactive, QtGui.QPalette.Light, brush)
+    
+    brush = QtGui.QBrush(QtGui.QColor(62, 62, 62))
+    brush.setStyle(QtCore.Qt.SolidPattern)
+    palette.setBrush(QtGui.QPalette.Inactive, QtGui.QPalette.Midlight, brush)
+    
+    brush = QtGui.QBrush(QtGui.QColor(25, 25, 25))
+    brush.setStyle(QtCore.Qt.SolidPattern)
+    palette.setBrush(QtGui.QPalette.Inactive, QtGui.QPalette.Dark, brush)
+    
+    brush = QtGui.QBrush(QtGui.QColor(33, 33, 33))
+    brush.setStyle(QtCore.Qt.SolidPattern)
+    palette.setBrush(QtGui.QPalette.Inactive, QtGui.QPalette.Mid, brush)
+    
+    brush = QtGui.QBrush(QtGui.QColor(245, 245, 245))
+    brush.setStyle(QtCore.Qt.SolidPattern)
+    palette.setBrush(QtGui.QPalette.Inactive, QtGui.QPalette.Text, brush)
+    
+    brush = QtGui.QBrush(QtGui.QColor(255, 255, 255))
+    brush.setStyle(QtCore.Qt.SolidPattern)
+    palette.setBrush(QtGui.QPalette.Inactive, QtGui.QPalette.BrightText, brush)
+    
+    brush = QtGui.QBrush(QtGui.QColor(255, 255, 255))
+    brush.setStyle(QtCore.Qt.SolidPattern)
+    palette.setBrush(QtGui.QPalette.Inactive, QtGui.QPalette.ButtonText, brush)
+    
+    brush = QtGui.QBrush(QtGui.QColor(100, 100, 100))
+    brush.setStyle(QtCore.Qt.SolidPattern)
+    palette.setBrush(QtGui.QPalette.Inactive, QtGui.QPalette.Base, brush)
+    
+    brush = QtGui.QBrush(QtGui.QColor(50, 50, 50))
+    brush.setStyle(QtCore.Qt.SolidPattern)
+    palette.setBrush(QtGui.QPalette.Inactive, QtGui.QPalette.Window, brush)
+    
+    brush = QtGui.QBrush(QtGui.QColor(0, 0, 0))
+    brush.setStyle(QtCore.Qt.SolidPattern)
+    palette.setBrush(QtGui.QPalette.Inactive, QtGui.QPalette.Shadow, brush)
+    
+    brush = QtGui.QBrush(QtGui.QColor(247, 147, 30))
+    brush.setStyle(QtCore.Qt.SolidPattern)
+    palette.setBrush(QtGui.QPalette.Inactive, QtGui.QPalette.Highlight, brush)
+    
+    brush = QtGui.QBrush(QtGui.QColor(25, 25, 25))
+    brush.setStyle(QtCore.Qt.SolidPattern)
+    palette.setBrush(QtGui.QPalette.Inactive, QtGui.QPalette.AlternateBase, brush)
+    
+    brush = QtGui.QBrush(QtGui.QColor(255, 255, 220))
+    brush.setStyle(QtCore.Qt.SolidPattern)
+    palette.setBrush(QtGui.QPalette.Inactive, QtGui.QPalette.ToolTipBase, brush)
+    
+    brush = QtGui.QBrush(QtGui.QColor(0, 0, 0))
+    brush.setStyle(QtCore.Qt.SolidPattern)
+    palette.setBrush(QtGui.QPalette.Inactive, QtGui.QPalette.ToolTipText, brush)
+    
+    # Disabled
+    brush = QtGui.QBrush(QtGui.QColor(25, 25, 25))
+    brush.setStyle(QtCore.Qt.SolidPattern)
+    palette.setBrush(QtGui.QPalette.Disabled, QtGui.QPalette.WindowText, brush)
+    
+    brush = QtGui.QBrush(QtGui.QColor(80, 80, 80))
+    brush.setStyle(QtCore.Qt.SolidPattern)
+    palette.setBrush(QtGui.QPalette.Disabled, QtGui.QPalette.Button, brush)
+    
+    brush = QtGui.QBrush(QtGui.QColor(75, 75, 75))
+    brush.setStyle(QtCore.Qt.SolidPattern)
+    palette.setBrush(QtGui.QPalette.Disabled, QtGui.QPalette.Light, brush)
+    
+    brush = QtGui.QBrush(QtGui.QColor(62, 62, 62))
+    brush.setStyle(QtCore.Qt.SolidPattern)
+    palette.setBrush(QtGui.QPalette.Disabled, QtGui.QPalette.Midlight, brush)
+    
+    brush = QtGui.QBrush(QtGui.QColor(25, 25, 25))
+    brush.setStyle(QtCore.Qt.SolidPattern)
+    palette.setBrush(QtGui.QPalette.Disabled, QtGui.QPalette.Dark, brush)
+    
+    brush = QtGui.QBrush(QtGui.QColor(33, 33, 33))
+    brush.setStyle(QtCore.Qt.SolidPattern)
+    palette.setBrush(QtGui.QPalette.Disabled, QtGui.QPalette.Mid, brush)
+    
+    brush = QtGui.QBrush(QtGui.QColor(25, 25, 25))
+    brush.setStyle(QtCore.Qt.SolidPattern)
+    palette.setBrush(QtGui.QPalette.Disabled, QtGui.QPalette.Text, brush)
+    
+    brush = QtGui.QBrush(QtGui.QColor(255, 255, 255))
+    brush.setStyle(QtCore.Qt.SolidPattern)
+    palette.setBrush(QtGui.QPalette.Disabled, QtGui.QPalette.BrightText, brush)
+    
+    brush = QtGui.QBrush(QtGui.QColor(25, 25, 25))
+    brush.setStyle(QtCore.Qt.SolidPattern)
+    palette.setBrush(QtGui.QPalette.Disabled, QtGui.QPalette.ButtonText, brush)
+    
+    brush = QtGui.QBrush(QtGui.QColor(50, 50, 50))
+    brush.setStyle(QtCore.Qt.SolidPattern)
+    palette.setBrush(QtGui.QPalette.Disabled, QtGui.QPalette.Base, brush)
+    
+    brush = QtGui.QBrush(QtGui.QColor(50, 50, 50))
+    brush.setStyle(QtCore.Qt.SolidPattern)
+    palette.setBrush(QtGui.QPalette.Disabled, QtGui.QPalette.Window, brush)
+    
+    brush = QtGui.QBrush(QtGui.QColor(0, 0, 0))
+    brush.setStyle(QtCore.Qt.SolidPattern)
+    palette.setBrush(QtGui.QPalette.Disabled, QtGui.QPalette.Shadow, brush)
+    
+    brush = QtGui.QBrush(QtGui.QColor(174, 174, 174))
+    brush.setStyle(QtCore.Qt.SolidPattern)
+    palette.setBrush(QtGui.QPalette.Disabled, QtGui.QPalette.Highlight, brush)
+    
+    brush = QtGui.QBrush(QtGui.QColor(50, 50, 50))
+    brush.setStyle(QtCore.Qt.SolidPattern)
+    palette.setBrush(QtGui.QPalette.Disabled, QtGui.QPalette.AlternateBase, brush)
+    
+    brush = QtGui.QBrush(QtGui.QColor(255, 255, 220))
+    brush.setStyle(QtCore.Qt.SolidPattern)
+    palette.setBrush(QtGui.QPalette.Disabled, QtGui.QPalette.ToolTipBase, brush)
+    
+    brush = QtGui.QBrush(QtGui.QColor(0, 0, 0))
+    brush.setStyle(QtCore.Qt.SolidPattern)
+    palette.setBrush(QtGui.QPalette.Disabled, QtGui.QPalette.ToolTipText, brush)
+    
+    return palette
 
 class ToolWidget(QtWidgets.QListWidgetItem):
 
@@ -65,6 +263,8 @@ class ToolboxWindow(QtWidgets.QMainWindow):
         self.current_tool = None
         self._suppress_package_change = False
 
+        self.controller = core.ToolboxController()
+
         pix = QtGui.QPixmap(resources.icon_path('app_icon512.png'))
         icon = QtGui.QIcon(pix)
         self.setWindowIcon(icon)
@@ -75,7 +275,7 @@ class ToolboxWindow(QtWidgets.QMainWindow):
 
     def setup_ui(self):
 
-        app_name = globalvars.name_with_version()
+        app_name = self.controller.get_app_title()
 
         self.setWindowTitle(app_name)
 
@@ -302,7 +502,7 @@ class ToolboxWindow(QtWidgets.QMainWindow):
         self.toolsets_combo.clear()
 
         items = []
-        for toolset in data.toolsets:
+        for toolset in self.controller.get_toolsets():
             items.append(toolset.name)
         if project_list is not None:
             items.extend(project_list)
@@ -313,14 +513,13 @@ class ToolboxWindow(QtWidgets.QMainWindow):
 
         self.tools_list.clear()
         toolset_name = self.toolsets_combo.currentText()
-        toolset = data.toolset_from_name(toolset_name)
-
-        if toolset is not None:
-            for tool in toolset.tools:
-                list_item = ToolWidget(tool)
-                list_item.setSizeHint(QtCore.QSize(128,160))
-                self.tools_list.addItem(list_item)
-                self.tools_list.setItemWidget(list_item, list_item.widget)
+        tools = self.controller.get_tools_for_toolset(toolset_name)
+        
+        for tool in tools:
+            list_item = ToolWidget(tool)
+            list_item.setSizeHint(QtCore.QSize(128,160))
+            self.tools_list.addItem(list_item)
+            self.tools_list.setItemWidget(list_item, list_item.widget)
 
 
     def update_packages(self, tool):
@@ -369,20 +568,11 @@ class ToolboxWindow(QtWidgets.QMainWindow):
 
 
     def on_shortcut_clicked(self):
-        if platform.system().lower() != "windows":
-            self.update_log("Error: Creating desktop shortcuts is only supported on Windows")
-            return
         items = self.tools_list.selectedItems()
         if len(items) > 0:
             tool = items[0].tool
-            target = resources.python_command()
-            arguments = f"{resources.rez_command()} {tool.rez_wants} -- {tool.command}"
-            if tool.subtitle:
-                name = f"{tool.title} ({tool.subtitle})"
-            else:
-                name = tool.title
-
-            util.create_shortcut_on_desktop(name, target=target, arguments=arguments)
+            success, message = self.controller.create_desktop_shortcut(tool)
+            self.update_log(message)
 
 
     def on_edit_clicked(self):
@@ -402,10 +592,10 @@ class ToolboxWindow(QtWidgets.QMainWindow):
                 return
 
             rez_wants = self.read_packages_table()
-            success, error_message = data.update_tool_packages(self.current_tool, rez_wants)
+            success, error_message = self.controller.update_tool_packages(self.current_tool, rez_wants)
             if not success:
-                self.update_log(f"Error saving packages: {error_message}")
-                return
+               self.update_log(f"Error saving packages: {error_message}")
+               return
 
             self.packages_table.setEditTriggers(QtWidgets.QTableWidget.NoEditTriggers)
             self.edit_button.setText("Edit...")
@@ -590,22 +780,9 @@ class ToolboxWindow(QtWidgets.QMainWindow):
     def run_tool(self, tool, open_shell=False):
 
         self.update_log(f'Running: {tool.title} {tool.subtitle}...')
-
-        rez_command = resources.rez_command()
-
-        rez_wants = ' '.join(tool.rez_wants)
-
-        rez_command = f'{rez_command} {rez_wants}'
-        command = ''
-
-        if open_shell:
-            if platform.system().lower() == 'windows':
-                command = f'cmd.exe /C start cmd.exe /K {rez_command}' # Super hack!
-            else:
-                command = f'gnome-terminal -- {rez_command}'
-        else:
-            command = f'{rez_command} -- {tool.command}'
+        
+        command, process = self.controller.launch_tool(tool, open_shell)
 
         self.update_log(f'Command: {command}')
-        process = QtCore.QProcess(self)
-        process.startCommand(command)
+
+

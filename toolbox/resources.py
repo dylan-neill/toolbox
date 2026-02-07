@@ -13,7 +13,10 @@ def icon_path(icon):
 
 
 def load_config():
-    
+    """
+    DEPRECATED: Use core.DataManager.load_config() instead.
+    Kept for potential legacy compatibility during refactor, but should be removed eventually.
+    """
     config_file = None
     result = None
 
@@ -28,15 +31,12 @@ def load_config():
         if not os.path.exists(os.path.dirname(config_file)):
             os.makedirs(os.path.dirname(config_file))
         default_config = os.path.join(app_path, "resources", "default_config.json")
-        shutil.copy(default_config, config_file)
-        if not os.path.isfile(config_file):
-            print(f"Error copying {default_config} to {config_file}")
-            return None
-        else:
+        try:
+            shutil.copy(default_config, config_file)
             print(f"Default config created at: {config_file}")
-
-    global _config_file
-    _config_file = config_file
+        except Exception as e:
+            print(f"Error copying {default_config} to {config_file}: {e}")
+            return None
 
     with open(config_file) as file_id:
         result = json.load(file_id)

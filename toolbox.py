@@ -4,8 +4,6 @@ import sys
 from PySide6 import QtWidgets
 import platform
 
-from toolbox import globalvars
-from toolbox import data
 from toolbox import ui
 
 def main():
@@ -16,13 +14,11 @@ def main():
         myappid = 'dn.toolbox.1' # arbitrary string
         ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
 
-    data.populate()
-
     QtWidgets.QApplication.setStyle('fusion')
     app = QtWidgets.QApplication(sys.argv)
 
     main_window = ui.ToolboxWindow()
-    main_window.setPalette(globalvars.palette())
+    main_window.setPalette(ui.get_palette())
     main_window.show()
     sys.exit(app.exec_())
 
