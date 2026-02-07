@@ -1,80 +1,39 @@
+from __future__ import annotations
+
 import platform
+
 from PySide6 import QtCore, QtGui, QtWidgets
 
-from . import globalvars
-from . import resources
-from . import data
-from . import util
-
-class ToolWidget(QtWidgets.QListWidgetItem):
-
-    def __init__(self, tool):
-        super(ToolWidget, self).__init__()
-
-        self.tool = tool
-        self.widget = QtWidgets.QWidget()
-
-        self.layout = QtWidgets.QVBoxLayout()
-        self.layout.setSpacing(0)
-        self.widget.setLayout(self.layout)
-
-        pix = QtGui.QPixmap(resources.icon_path(tool.icon)).scaled(64,64, QtCore.Qt.KeepAspectRatio, QtCore.Qt.SmoothTransformation)
-        self.icon_label = QtWidgets.QLabel()
-        self.icon_label.setPixmap(pix)
-        self.icon_label.setAlignment(QtCore.Qt.AlignCenter)
-        self.icon_label.setFixedSize(QtCore.QSize(64,64))
-        self.layout.addWidget(self.icon_label)
-        self.layout.setAlignment(self.icon_label, QtCore.Qt.AlignHCenter)
-
-        self.layout.addSpacing(5)
-
-        self.app_name_label = QtWidgets.QLabel(tool.title)
-        font = QtGui.QFont()
-        font.setPixelSize(16)
-        self.app_name_label.setFont(font)
-        self.app_name_label.setWordWrap(True)
-        self.app_name_label.setAlignment(QtCore.Qt.AlignHCenter)
-        self.layout.addWidget(self.app_name_label)
-
-        self.layout.addSpacing(2)
-
-        self.app_subtitle_label = QtWidgets.QLabel(tool.subtitle)
-        font = QtGui.QFont()
-        font.setPixelSize(12)
-        self.app_subtitle_label.setFont(font)
-        self.app_subtitle_label.setWordWrap(True)
-        self.app_subtitle_label.setAlignment(QtCore.Qt.AlignHCenter | QtCore.Qt.AlignTop)
-
-        self.layout.addWidget(self.app_subtitle_label)
-
-        self.layout.addStretch(1)
+from .. import globalvars, resources, util
+from ..services.launcher import Launcher, QtProcessLauncher
+from ..services.tool_repository import ToolRepository
+from .widgets.tool_widget import ToolWidget
 
 
 class ToolboxWindow(QtWidgets.QMainWindow):
-
     main_font = QtGui.QFont()
     main_font_bold = QtGui.QFont()
     main_font_bold.setBold(True)
 
+    def __init__(self, repository: ToolRepository, launcher: Launcher | None = None):
+        super().__init__()
 
-    def __init__(self):
-        super(ToolboxWindow, self).__init__()
-
-        self.blank_pixmap = QtGui.QPixmap(64,64)
-        self.blank_pixmap.fill(QtGui.QColor(60,60,60))
+        self.blank_pixmap = QtGui.QPixmap(64, 64)
+        self.blank_pixmap.fill(QtGui.QColor(60, 60, 60))
         self.current_tool = None
         self._suppress_package_change = False
+        self.repository = repository
+        self.launcher = launcher or QtProcessLauncher(resources.rez_command())
+        self.toolsets = self.repository.load_toolsets()
 
-        pix = QtGui.QPixmap(resources.icon_path('app_icon512.png'))
+        pix = QtGui.QPixmap(resources.icon_path("app_icon512.png"))
         icon = QtGui.QIcon(pix)
         self.setWindowIcon(icon)
 
         self.setup_ui()
         self.setup_interaction()
 
-
     def setup_ui(self):
-
         app_name = globalvars.name_with_version()
 
         self.setWindowTitle(app_name)
@@ -109,9 +68,6 @@ class ToolboxWindow(QtWidgets.QMainWindow):
         self.details_layout = QtWidgets.QVBoxLayout()
         self.main_columns_layout.addLayout(self.details_layout)
 
-        '''
-        Icon and name
-        '''
         self.icon_layout = QtWidgets.QHBoxLayout()
         self.details_layout.addLayout(self.icon_layout)
 
@@ -129,7 +85,9 @@ class ToolboxWindow(QtWidgets.QMainWindow):
         font.setPixelSize(18)
         font.setBold(True)
         self.app_name_label.setFont(font)
-        self.app_name_label.setAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignTop | QtCore.Qt.AlignLeading)
+        self.app_name_label.setAlignment(
+            QtCore.Qt.AlignLeft | QtCore.Qt.AlignTop | QtCore.Qt.AlignLeading
+        )
         self.app_name_label.setFixedWidth(160)
         self.app_name_label.setWordWrap(True)
         self.app_name_layout.addWidget(self.app_name_label)
@@ -138,30 +96,29 @@ class ToolboxWindow(QtWidgets.QMainWindow):
         font = QtGui.QFont()
         font.setPixelSize(14)
         self.details_app_subtitle.setFont(font)
-        self.details_app_subtitle.setAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignTop | QtCore.Qt.AlignLeading)
+        self.details_app_subtitle.setAlignment(
+            QtCore.Qt.AlignLeft | QtCore.Qt.AlignTop | QtCore.Qt.AlignLeading
+        )
         self.details_app_subtitle.setWordWrap(True)
         self.details_app_subtitle.setFixedWidth(160)
         self.app_name_layout.addWidget(self.details_app_subtitle)
 
-        '''
-        Menu Button
-        '''
         self.menu_button = QtWidgets.QPushButton()
-        self.menu_button.setFixedSize(23,23)
+        self.menu_button.setFixedSize(23, 23)
         self.context_menu = QtWidgets.QMenu()
 
-        self.context_edit_action = QtGui.QAction('Edit...', self)
+        self.context_edit_action = QtGui.QAction("Edit...", self)
         self.context_edit_action.triggered.connect(self.on_edit_clicked)
         self.context_menu.addAction(self.context_edit_action)
 
-        self.context_duplicate_action = QtGui.QAction('Duplicate', self)
+        self.context_duplicate_action = QtGui.QAction("Duplicate", self)
         self.context_menu.addAction(self.context_duplicate_action)
 
-        self.context_shortcut_action = QtGui.QAction('Create Desktop Shortcut', self)
+        self.context_shortcut_action = QtGui.QAction("Create Desktop Shortcut", self)
         self.context_shortcut_action.triggered.connect(self.on_shortcut_clicked)
         self.context_menu.addAction(self.context_shortcut_action)
 
-        self.context_delete_action = QtGui.QAction('Delete', self)
+        self.context_delete_action = QtGui.QAction("Delete", self)
         self.context_menu.addAction(self.context_delete_action)
 
         self.menu_button.setMenu(self.context_menu)
@@ -173,8 +130,6 @@ class ToolboxWindow(QtWidgets.QMainWindow):
         self.packages_label.setText("Packages")
         self.packages_label.setEnabled(False)
         self.details_layout.addWidget(self.packages_label)
-
-        # Package Info
 
         self.packages_table = QtWidgets.QTableWidget()
         self.packages_table.setFixedWidth(260)
@@ -217,7 +172,7 @@ class ToolboxWindow(QtWidgets.QMainWindow):
         font.setBold(True)
         self.launch_button.setFont(font)
         palette = QtGui.QPalette()
-        brush = QtGui.QBrush(QtGui.QColor(55,155,93))
+        brush = QtGui.QBrush(QtGui.QColor(55, 155, 93))
         brush.setStyle(QtCore.Qt.SolidPattern)
         palette.setBrush(QtGui.QPalette.Button, brush)
         self.launch_button.setPalette(palette)
@@ -239,35 +194,24 @@ class ToolboxWindow(QtWidgets.QMainWindow):
         brush.setStyle(QtCore.Qt.SolidPattern)
         palette.setBrush(QtGui.QPalette.Inactive, QtGui.QPalette.Base, brush)
         self.log_text_box.setPalette(palette)
-        self.log_text_box.setText(app_name + ' ready...')
+        self.log_text_box.setText(app_name + " ready...")
 
         self.setCentralWidget(self.central_widget)
 
-        self.process_list = []
+        self.process_list: list[QtCore.QProcess] = []
 
         self.set_defaults()
         self.update_toolset_list()
         self.update_tools()
 
-
-    def update_log(self, text):
-        """
-        Adds a line of text to the log pane
-        :param text: The text to add
-        :return:
-        """
+    def update_log(self, text: str):
         cursor = self.log_text_box.textCursor()
         cursor.movePosition(cursor.MoveOperation.End)
-        cursor.insertText('\n' + text.rstrip('\n'))
+        cursor.insertText("\n" + text.rstrip("\n"))
         sb = self.log_text_box.verticalScrollBar()
         sb.setValue(sb.maximum())
 
-
     def setup_interaction(self):
-        """
-        Makes all UI interaction connections
-        :return:
-        """
         self.tools_list.itemClicked.connect(self.on_item_clicked)
         self.tools_list.itemDoubleClicked.connect(self.on_item_double_clicked)
         self.toolsets_combo.currentIndexChanged.connect(self.update_tools)
@@ -276,107 +220,61 @@ class ToolboxWindow(QtWidgets.QMainWindow):
         self.edit_button.clicked.connect(self.on_edit_clicked)
         self.packages_table.itemChanged.connect(self.on_package_item_changed)
 
-
     def set_defaults(self):
-        """
-        Sets control defaults whether from prefs on disk or hardcoded defaults
-        :return:
-        """
         screen_rect = QtWidgets.QApplication.primaryScreen().geometry()
         width = 845
         height = 460
-        pos_x = (screen_rect.width()-width)/2
-        pos_y = (screen_rect.height()-height)/2
-        
+        pos_x = int((screen_rect.width() - width) / 2)
+        pos_y = int((screen_rect.height() - height) / 2)
+
         self.setGeometry(pos_x, pos_y, width, height)
         self.toolsets_combo.setCurrentIndex(0)
 
-
     def update_toolset_list(self, project_list=None):
-        """
-        Takes project list and adds to toolsets combo box with other default options
-        :param project_list:
-        :return:
-        """
-
         self.toolsets_combo.clear()
 
-        items = []
-        for toolset in data.toolsets:
-            items.append(toolset.name)
+        items = [toolset.name for toolset in self.toolsets]
         if project_list is not None:
             items.extend(project_list)
         self.toolsets_combo.addItems(items)
 
-
     def update_tools(self):
-
         self.tools_list.clear()
         toolset_name = self.toolsets_combo.currentText()
-        toolset = data.toolset_from_name(toolset_name)
+        toolset = self.repository.toolset_from_name(toolset_name)
 
         if toolset is not None:
             for tool in toolset.tools:
                 list_item = ToolWidget(tool)
-                list_item.setSizeHint(QtCore.QSize(128,160))
+                list_item.setSizeHint(QtCore.QSize(128, 160))
                 self.tools_list.addItem(list_item)
                 self.tools_list.setItemWidget(list_item, list_item.widget)
 
-
-    def update_packages(self, tool):
-        package_dict = {}
-
-        row = 0
-        self.packages_table.clearContents()
-        self.packages_table.setRowCount(len(package_dict.items()))
-
-        for package, version in package_dict.iteritems():
-            new_item = QtWidgets.QTableWidgetItem()
-            new_item.setText(package)
-            new_item.setFlags(~QtCore.Qt.ItemIsEditable & ~QtCore.Qt.ItemIsSelectable)
-            self.packages_table.setItem(row, 0, new_item)
-            new_item = QtWidgets.QTableWidgetItem()
-            new_item.setText(version)
-            new_item.setFlags(~QtCore.Qt.ItemIsEditable & ~QtCore.Qt.ItemIsSelectable)
-            self.packages_table.setItem(row, 1, new_item)
-            row += 1
-
-        self.packages_table.repaint()
-
-
-    '''
-    UI Interactions
-    '''
     def on_item_clicked(self, item):
         self.update_tool_info(item.tool)
-        #self.update_packages(item.tool)
-
 
     def on_item_double_clicked(self, item):
         self.run_tool(item.tool)
 
-
     def on_launch_clicked(self):
         items = self.tools_list.selectedItems()
-        if len(items) > 0:
+        if items:
             self.run_tool(items[0].tool)
-
 
     def on_open_shell_clicked(self):
         items = self.tools_list.selectedItems()
-        if len(items) > 0:
+        if items:
             self.run_tool(items[0].tool, open_shell=True)
-
 
     def on_shortcut_clicked(self):
         if platform.system().lower() != "windows":
             self.update_log("Error: Creating desktop shortcuts is only supported on Windows")
             return
         items = self.tools_list.selectedItems()
-        if len(items) > 0:
+        if items:
             tool = items[0].tool
             target = resources.python_command()
-            arguments = f"{resources.rez_command()} {tool.rez_wants} -- {tool.command}"
+            arguments = f"{resources.rez_command()} {' '.join(tool.rez_wants)} -- {tool.command}"
             if tool.subtitle:
                 name = f"{tool.title} ({tool.subtitle})"
             else:
@@ -384,13 +282,12 @@ class ToolboxWindow(QtWidgets.QMainWindow):
 
             util.create_shortcut_on_desktop(name, target=target, arguments=arguments)
 
-
     def on_edit_clicked(self):
         if self.packages_table.editTriggers() == QtWidgets.QTableWidget.NoEditTriggers:
             self.packages_table.setEditTriggers(QtWidgets.QTableWidget.AllEditTriggers)
             self.edit_button.setText("Save")
             palette = QtGui.QPalette()
-            brush = QtGui.QBrush(QtGui.QColor(155,25,25))
+            brush = QtGui.QBrush(QtGui.QColor(155, 25, 25))
             brush.setStyle(QtCore.Qt.SolidPattern)
             palette.setBrush(QtGui.QPalette.Button, brush)
             self.edit_button.setPalette(palette)
@@ -402,7 +299,9 @@ class ToolboxWindow(QtWidgets.QMainWindow):
                 return
 
             rez_wants = self.read_packages_table()
-            success, error_message = data.update_tool_packages(self.current_tool, rez_wants)
+            success, error_message = self.repository.update_tool_packages(
+                self.current_tool.tool_id, rez_wants
+            )
             if not success:
                 self.update_log(f"Error saving packages: {error_message}")
                 return
@@ -410,7 +309,7 @@ class ToolboxWindow(QtWidgets.QMainWindow):
             self.packages_table.setEditTriggers(QtWidgets.QTableWidget.NoEditTriggers)
             self.edit_button.setText("Edit...")
             palette = QtGui.QPalette()
-            brush = QtGui.QBrush(QtGui.QColor(80,80,80))
+            brush = QtGui.QBrush(QtGui.QColor(80, 80, 80))
             brush.setStyle(QtCore.Qt.SolidPattern)
             palette.setBrush(QtGui.QPalette.Button, brush)
             self.edit_button.setPalette(palette)
@@ -418,9 +317,8 @@ class ToolboxWindow(QtWidgets.QMainWindow):
             self.update_log("Packages saved")
         self.update()
 
-
     def set_tool_info_enabled(self, enabled):
-        if enabled is False:
+        if not enabled:
             self.packages_table.clearContents()
 
         self.app_name_label.setEnabled(enabled)
@@ -432,22 +330,20 @@ class ToolboxWindow(QtWidgets.QMainWindow):
         self.shell_button.setEnabled(enabled)
         self.launch_button.setEnabled(enabled)
 
-
     def update_tool_info(self, tool):
         self.current_tool = tool
         self.set_tool_info_enabled(True)
         self.app_name_label.setText(tool.title)
         self.details_app_subtitle.setText(tool.subtitle)
-        pix = QtGui.QPixmap(resources.icon_path(tool.icon))\
-                .scaled(64,64, QtCore.Qt.KeepAspectRatio, QtCore.Qt.SmoothTransformation)
+        pix = QtGui.QPixmap(resources.icon_path(tool.icon)).scaled(
+            64, 64, QtCore.Qt.KeepAspectRatio, QtCore.Qt.SmoothTransformation
+        )
         self.app_icon.setPixmap(pix)
 
         self.populate_packages_table(tool, editing=False)
 
-
     def is_editing_packages(self):
         return self.packages_table.editTriggers() != QtWidgets.QTableWidget.NoEditTriggers
-
 
     def populate_packages_table(self, tool, editing=False):
         self._suppress_package_change = True
@@ -457,7 +353,7 @@ class ToolboxWindow(QtWidgets.QMainWindow):
         self.packages_table.setRowCount(0)
 
         for want in tool.rez_wants:
-            tokens = want.split("-") # Can Rez use hyphens in package names?
+            tokens = want.split("-")
             row = self.packages_table.rowCount()
             self.packages_table.insertRow(row)
 
@@ -481,7 +377,6 @@ class ToolboxWindow(QtWidgets.QMainWindow):
         self.packages_table.blockSignals(False)
         self._suppress_package_change = False
 
-
     def add_blank_package_row(self):
         row = self.packages_table.rowCount()
         self.packages_table.insertRow(row)
@@ -489,18 +384,15 @@ class ToolboxWindow(QtWidgets.QMainWindow):
         self.packages_table.setItem(row, 1, QtWidgets.QTableWidgetItem())
         self.add_remove_button(row)
 
-
     def add_remove_button(self, row):
         button = QtWidgets.QPushButton("-")
         button.setFixedSize(22, 20)
         button.clicked.connect(self.on_remove_row_clicked)
         self.packages_table.setCellWidget(row, 2, button)
 
-
     def clear_remove_buttons(self):
         for row in range(self.packages_table.rowCount()):
             self.packages_table.setCellWidget(row, 2, None)
-
 
     def ensure_blank_row(self):
         if not self.is_editing_packages():
@@ -521,7 +413,6 @@ class ToolboxWindow(QtWidgets.QMainWindow):
 
         self.add_blank_package_row()
 
-
     def read_packages_table(self):
         rez_wants = []
         for row in range(self.packages_table.rowCount()):
@@ -540,7 +431,6 @@ class ToolboxWindow(QtWidgets.QMainWindow):
 
         return rez_wants
 
-
     def on_remove_row_clicked(self):
         if not self.is_editing_packages():
             self.update_log("Enable Edit to remove packages")
@@ -555,7 +445,6 @@ class ToolboxWindow(QtWidgets.QMainWindow):
                 self.packages_table.removeRow(row)
                 self.ensure_blank_row()
                 return
-
 
     def on_package_item_changed(self, item):
         if self._suppress_package_change or not self.is_editing_packages():
@@ -577,35 +466,32 @@ class ToolboxWindow(QtWidgets.QMainWindow):
         self.add_blank_package_row()
         self._suppress_package_change = False
 
-
     def update_proc_log(self, process):
-        self.update_log(str(process.readAll()))
+        stdout = bytes(process.readAllStandardOutput()).decode("utf-8", errors="replace").strip()
+        stderr = bytes(process.readAllStandardError()).decode("utf-8", errors="replace").strip()
+        if stdout:
+            self.update_log(stdout)
+        if stderr:
+            self.update_log(stderr)
 
-
-    def process_cleanup(self, process):
+    def process_cleanup(self, process, *_args):
         self.update_log("Process finished")
-        self.process_list.remove(process)
-
+        if process in self.process_list:
+            self.process_list.remove(process)
 
     def run_tool(self, tool, open_shell=False):
+        self.update_log(f"Running: {tool.title} {tool.subtitle}...")
 
-        self.update_log(f'Running: {tool.title} {tool.subtitle}...')
+        try:
+            process, spec = self.launcher.start(tool, open_shell=open_shell, parent=self)
+        except Exception as exc:  # noqa: BLE001
+            self.update_log(f"Error: {exc}")
+            return
 
-        rez_command = resources.rez_command()
+        self.update_log(f"Command: {spec.display_command}")
 
-        rez_wants = ' '.join(tool.rez_wants)
-
-        rez_command = f'{rez_command} {rez_wants}'
-        command = ''
-
-        if open_shell:
-            if platform.system().lower() == 'windows':
-                command = f'cmd.exe /C start cmd.exe /K {rez_command}' # Super hack!
-            else:
-                command = f'gnome-terminal -- {rez_command}'
-        else:
-            command = f'{rez_command} -- {tool.command}'
-
-        self.update_log(f'Command: {command}')
-        process = QtCore.QProcess(self)
-        process.startCommand(command)
+        process.readyReadStandardOutput.connect(lambda: self.update_proc_log(process))
+        process.readyReadStandardError.connect(lambda: self.update_proc_log(process))
+        process.finished.connect(lambda *args: self.process_cleanup(process, *args))
+        process.errorOccurred.connect(lambda err: self.update_log(f"Process error: {err}"))
+        self.process_list.append(process)

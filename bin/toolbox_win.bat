@@ -1,1 +1,1 @@
-..\venv\Scripts\python.exe ..\toolbox\main.py
+%~dp0..\venv\Scripts\python.exe -m toolbox

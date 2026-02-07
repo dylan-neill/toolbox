@@ -1,3 +1,3 @@
 #! /bin/sh
 
-../venv/bin/python3 ../toolbox/main.py
+"$(dirname "$0")"/../venv/bin/python3 -m toolbox
