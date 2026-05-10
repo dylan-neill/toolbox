@@ -20,8 +20,8 @@ def populate():
         toolsets.append(toolset)
         if 'job' in toolset_dict:
             toolset.job = toolset_dict['job']
-        for tool_dict in toolset_dict['apps']:
-            tool = Tool(tool_dict['app'], tool_dict['version'], tool_dict['desc'], tool_dict['tools'], tool_dict['icon'], tool_dict['command'])
+        for tool_dict in toolset_dict['tools']:
+            tool = Tool(tool_dict['name'], tool_dict['version'], tool_dict['desc'], tool_dict['rez_wants'], tool_dict['icon'], tool_dict['command'])
             if tool is not None:
                 toolset.add_tool(tool)
             else:

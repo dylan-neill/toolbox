@@ -6,8 +6,7 @@ if platform.system().lower() == "windows":
     from win32com.client import Dispatch
 
 def create_shortcut_on_desktop(name, target='', arguments='', working_dir='', icon=''):
-    home = os.path.expanduser('~')
-    path = os.path.join(home, 'Desktop', name + '.lnk')
+    path = os.path.join(os.path.expanduser('~'), 'Desktop', name + '.lnk')
     shell = Dispatch('WScript.Shell')
     shortcut = shell.CreateShortCut(path)
     shortcut.Targetpath = target

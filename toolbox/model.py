@@ -24,10 +24,6 @@ class ToolSet():
     def tools(self):
         return self._tools
 
-    # def print_tool_names(self):
-    #     for tool in self._tools:
-    #         print(tool.title)
-
     def add_tool(self, tool):
         self._tools.append(tool)
         if self.job is not None:

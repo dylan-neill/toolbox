@@ -7,7 +7,6 @@ import json
 app_path = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
 
 def icon_path(icon):
-    print("Icon path:", os.path.join(app_path, "resources", "icons", icon))
     return os.path.join(app_path, "resources", "icons", icon)
 
 
@@ -29,7 +28,7 @@ def load_config():
     if not os.path.isfile(config_file):
         if not os.path.exists(os.path.dirname(config_file)):
             os.makedirs(os.path.dirname(config_file))
-        default_config = os.path.join(app_path, "resources", "default_config.json")
+        default_config = os.path.join(app_path, "resources", "example_config.json")
         shutil.copy(default_config, config_file)
         if not os.path.isfile(config_file):
             print(f"Error copying {default_config} to {config_file}")

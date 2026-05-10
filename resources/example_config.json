@@ -1,0 +1,139 @@
+{
+  "toolsets": [
+    {
+      "name": "Production",
+      "tools": [
+        {
+          "name": "Maya",
+          "version": "2025",
+          "desc": "",
+          "rez_wants": ["maya-2025", "site", "site_ocio", "deadline"],
+          "command": "maya",
+          "icon": "maya_icon.png"
+        },
+        {
+          "name": "Maya",
+          "version": "2025",
+          "desc": "Redshift 2025.6",
+          "rez_wants": ["maya-2025", "redshift-2025.6", "site", "site_ocio", "deadline"],
+          "command": "maya",
+          "icon": "maya_icon.png"
+        },
+        {
+          "name": "Houdini",
+          "version": "20.5.684",
+          "desc": "",
+          "rez_wants": ["houdini-20.5.684", "site", "site_ocio", "deadline"],
+          "command": "houdini",
+          "icon": "houdini.svg"
+        },
+        {
+          "name": "Houdini",
+          "version": "20.5.684",
+          "desc": "Redshift 2025.6",
+          "rez_wants": ["houdini-20.5.684", "redshift-2025.6", "site", "site_ocio", "deadline"],
+          "command": "houdini",
+          "icon": "houdini.svg"
+        },
+        {
+          "name": "Blender",
+          "version": "4.5",
+          "desc": "ACES",
+          "rez_wants": ["blender-4.5", "site", "site_ocio", "blender_deadline"],
+          "command": "blender",
+          "icon": "blender.svg"
+        },
+        {
+          "name": "3DS Max",
+          "version": "2025",
+          "desc": "Redshift 2025.6",
+          "rez_wants": ["3dsmax-2025", "site", "site_ocio", "max_scripts-2025"],
+          "command": "3dsmax",
+          "icon": "max_icon.png"
+        },
+        {
+          "name": "Nuke",
+          "version": "16.1",
+          "desc": "",
+          "rez_wants": ["nuke-16.1", "site", "site_ocio", "nuke_scripts-2025"],
+          "command": "nuke16.0",
+          "icon": "nuke_icon.png"
+        }
+      ]
+    },
+    {
+      "name": "Old Project",
+      "tools": [
+        {
+          "name": "Maya",
+          "version": "2022",
+          "desc": "Redshift 3.6",
+          "rez_wants": ["maya-2022", "redshift-3.6", "site", "site_ocio", "deadline"],
+          "command": "maya",
+          "icon": "maya_icon.png"
+        },
+        {
+          "name": "Houdini",
+          "version": "19.0",
+          "desc": "",
+          "rez_wants": ["houdini-19.0", "site", "site_ocio", "deadline"],
+          "command": "houdini",
+          "icon": "houdini.svg"
+        },
+        {
+          "name": "Nuke",
+          "version": "12.0",
+          "desc": "",
+          "rez_wants": ["nuke-12.0", "site", "site_ocio", "nuke_scripts-2020"],
+          "command": "nuke12.0",
+          "icon": "nuke_icon.png"
+        }
+      ]
+    },
+    {
+      "name": "Testing",
+      "tools": [
+        {
+          "name": "Maya",
+          "version": "2026",
+          "desc": "",
+          "rez_wants": ["maya-2026", "site", "site_ocio", "deadline"],
+          "command": "maya",
+          "icon": "maya_icon.png"
+        },
+        {
+          "name": "Maya",
+          "version": "2026",
+          "desc": "Renderman",
+          "rez_wants": ["maya-2026", "renderman", "site", "site_ocio", "deadline"],
+          "command": "maya",
+          "icon": "maya_icon.png"
+        },
+        {
+          "name": "Houdini",
+          "version": "21.0",
+          "desc": "Latest",
+          "rez_wants": ["houdini-21.0", "site", "site_ocio", "deadline"],
+          "command": "houdini",
+          "icon": "houdini.svg"
+        },
+        {
+          "name": "Blender",
+          "version": "5.2",
+          "desc": "Alpha",
+          "rez_wants": ["blender-5.2", "site", "site_ocio", "blender_deadline"],
+          "command": "blender",
+          "icon": "blender.svg"
+        },
+        {
+          "name": "Nuke",
+          "version": "17.0",
+          "desc": "",
+          "rez_wants": ["nuke-17.0", "site", "site_ocio", "nuke_scripts-2025"],
+          "command": "nuke17.0",
+          "icon": "nuke_icon.png"
+        }
+      ]
+    }
+  ]
+}

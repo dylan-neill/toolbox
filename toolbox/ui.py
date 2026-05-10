@@ -149,10 +149,12 @@ class ToolboxWindow(QtWidgets.QMainWindow):
         self.context_menu = QtWidgets.QMenu()
 
         self.context_edit_action = QtGui.QAction('Edit...', self)
-        self.context_edit_action.triggered.connect(self.on_edit_clicked)
+        # self.context_edit_action.triggered.connect(self.on_edit_clicked)
+        self.context_edit_action.setEnabled(False)
         self.context_menu.addAction(self.context_edit_action)
 
         self.context_duplicate_action = QtGui.QAction('Duplicate', self)
+        self.context_duplicate_action.setEnabled(False)
         self.context_menu.addAction(self.context_duplicate_action)
 
         self.context_shortcut_action = QtGui.QAction('Create Desktop Shortcut', self)
@@ -160,6 +162,7 @@ class ToolboxWindow(QtWidgets.QMainWindow):
         self.context_menu.addAction(self.context_shortcut_action)
 
         self.context_delete_action = QtGui.QAction('Delete', self)
+        self.context_delete_action.setEnabled(False)
         self.context_menu.addAction(self.context_delete_action)
 
         self.menu_button.setMenu(self.context_menu)
@@ -345,7 +348,6 @@ class ToolboxWindow(QtWidgets.QMainWindow):
     '''
     def on_item_clicked(self, item):
         self.update_tool_info(item.tool)
-        #self.update_packages(item.tool)
 
 
     def on_item_double_clicked(self, item):
@@ -372,7 +374,8 @@ class ToolboxWindow(QtWidgets.QMainWindow):
         if len(items) > 0:
             tool = items[0].tool
             target = resources.python_command()
-            arguments = f"{resources.rez_command()} {tool.rez_wants} -- {tool.command}"
+            rez_wants_str = " ".join(tool.rez_wants)
+            arguments = f"{resources.rez_command()} {rez_wants_str} -- {tool.command}"
             if tool.subtitle:
                 name = f"{tool.title} ({tool.subtitle})"
             else:
@@ -407,10 +410,10 @@ class ToolboxWindow(QtWidgets.QMainWindow):
 
         self.app_name_label.setEnabled(enabled)
         self.details_app_subtitle.setEnabled(enabled)
-        self.menu_button.setEnabled(enabled)
+        # self.menu_button.setEnabled(enabled)
         self.packages_label.setEnabled(enabled)
         self.packages_table.setEnabled(enabled)
-        self.edit_button.setEnabled(enabled)
+        # self.edit_button.setEnabled(enabled)
         self.shell_button.setEnabled(enabled)
         self.launch_button.setEnabled(enabled)
 
