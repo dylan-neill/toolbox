@@ -1,3 +1,5 @@
+<img width="1270" height="734" alt="readme-screenshot" src="https://github.com/user-attachments/assets/40c68a23-2694-47b1-b7f5-fd3f1dc1eab3" />
+
 # Toolbox
 
 Toolbox is a DCC software launcher aimed at 3D animation and visual effects production. It uses industry standard Rez packages for environment and version configurations
