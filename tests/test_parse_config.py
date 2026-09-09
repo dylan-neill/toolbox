@@ -6,9 +6,9 @@ predictably. Covers well-formed and malformed input.
 
 import pytest
 
-from toolbox.data import parse_config
+from toolbox.data import ConfigDict, parse_config
 
-WELL_FORMED = {
+WELL_FORMED: ConfigDict = {
     "toolsets": [
         {
             "name": "Production",
@@ -28,7 +28,7 @@ WELL_FORMED = {
 }
 
 
-def test_parses_toolsets_and_tools():
+def test_parses_toolsets_and_tools() -> None:
     toolsets = parse_config(WELL_FORMED)
     assert len(toolsets) == 1
     toolset = toolsets[0]
@@ -43,16 +43,20 @@ def test_parses_toolsets_and_tools():
     assert tool.rez_wants == ["maya-2025", "redshift-2025.6"]
 
 
-def test_empty_toolsets_yields_empty_list():
+def test_empty_toolsets_yields_empty_list() -> None:
     assert parse_config({"toolsets": []}) == []
 
 
-def test_missing_toolsets_key_raises():
+def test_missing_toolsets_key_raises() -> None:
     with pytest.raises(KeyError):
-        parse_config({})
+        # Deliberately malformed: proves a bad Config fails at the parse. The
+        # empty dict violates ConfigDict on purpose, hence the targeted ignore.
+        parse_config({})  # pyright: ignore[reportArgumentType]
 
 
-def test_tool_missing_required_key_raises():
+def test_tool_missing_required_key_raises() -> None:
     malformed = {"toolsets": [{"name": "P", "tools": [{"name": "Maya"}]}]}
     with pytest.raises(KeyError):
-        parse_config(malformed)
+        # Deliberately malformed input (missing Tool keys); the runtime KeyError
+        # is the contract under test, so the static type mismatch is expected.
+        parse_config(malformed)  # pyright: ignore[reportArgumentType]

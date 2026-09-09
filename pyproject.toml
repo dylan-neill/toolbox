@@ -30,6 +30,7 @@ toolbox = "toolbox.__main__:main"
 [dependency-groups]
 dev = [
     "briefcase>=0.3.20",
+    "pyright>=1.1.389",
     "pytest>=8.0",
     "pytest-qt>=4.4",
 ]
@@ -39,6 +40,16 @@ packages = ["src/toolbox"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+
+# --- Type checking (ADR 0005) ------------------------------------------------
+# Strict by default: the logic seams (model.py, data.py, resources/) carry the
+# real domain and are held to it. The Qt/OS boundary (ui.py, globalvars.py, and
+# the Windows-only paths) relaxes the stub-driven rules via per-file `# pyright:`
+# headers, not a global lowering — so the exemption stays scoped and visible.
+[tool.pyright]
+include = ["src", "tests"]
+pythonVersion = "3.11"
+typeCheckingMode = "strict"
 
 # --- Briefcase packaging (ADR 0001) -----------------------------------------
 # `briefcase package <platform>` builds native installers: a Windows .msi, a

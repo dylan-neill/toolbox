@@ -8,19 +8,19 @@ string the launcher runs is guarded here rather than tangled inside the UI.
 from toolbox import resources
 
 
-def test_multiple_rez_wants_are_space_joined_before_the_command():
+def test_multiple_rez_wants_are_space_joined_before_the_command() -> None:
     command = resources.launch_command(
         "rez-env", ["maya-2025", "site", "deadline"], "maya"
     )
     assert command == "rez-env maya-2025 site deadline -- maya"
 
 
-def test_single_rez_want():
+def test_single_rez_want() -> None:
     command = resources.launch_command("rez-env", ["maya-2025"], "maya")
     assert command == "rez-env maya-2025 -- maya"
 
 
-def test_empty_rez_wants_still_launches_the_command():
+def test_empty_rez_wants_still_launches_the_command() -> None:
     # No packages requested: the invocation is just the Rez command and the
     # target. This preserves the pre-refactor output exactly — the doubled space
     # where the empty want list used to sit is shell-equivalent to a single one.
@@ -28,7 +28,7 @@ def test_empty_rez_wants_still_launches_the_command():
     assert command == "rez-env  -- maya"
 
 
-def test_rez_command_is_a_parameter_not_hardcoded():
+def test_rez_command_is_a_parameter_not_hardcoded() -> None:
     # The Rez command is injected so the seam has no hidden dependency on how the
     # launcher happens to spell it today.
     command = resources.launch_command("/opt/rez/bin/rez-env", ["blender-4.5"], "blender")

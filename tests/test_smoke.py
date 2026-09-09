@@ -7,7 +7,10 @@ detail of the window.
 """
 
 
-def test_main_window_constructs(qtbot):
+from pytestqt.qtbot import QtBot
+
+
+def test_main_window_constructs(qtbot: QtBot) -> None:
     from toolbox.ui import ToolboxWindow
 
     window = ToolboxWindow()
