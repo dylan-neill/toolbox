@@ -43,6 +43,19 @@ def config_path(system, environ):
     return os.path.expanduser(os.path.join("~", ".config", "toolbox", "config.json"))
 
 
+def launch_command(rez_command, rez_wants, command):
+    """Seam A: build the ``rez-env <rez_wants> -- <command>`` invocation.
+
+    Pure: takes the Rez command, a Tool's ``rez_wants`` list, and its
+    ``command``, and returns the full string that starts the DCC inside its Rez
+    environment. Extracted from the UI so the produced string is unit-tested.
+    An empty ``rez_wants`` leaves a doubled space where the want list would
+    sit, which is shell-equivalent — the output is byte-for-byte what the UI
+    built before this seam existed.
+    """
+    return f"{rez_command} {' '.join(rez_wants)} -- {command}"
+
+
 def shell_command(system, rez_command):
     """Command that opens an interactive terminal inside ``rez_command``.
 

@@ -374,8 +374,9 @@ class ToolboxWindow(QtWidgets.QMainWindow):
         if len(items) > 0:
             tool = items[0].tool
             target = resources.python_command()
-            rez_wants_str = " ".join(tool.rez_wants)
-            arguments = f"{resources.rez_command()} {rez_wants_str} -- {tool.command}"
+            arguments = resources.launch_command(
+                resources.rez_command(), tool.rez_wants, tool.command
+            )
             if tool.subtitle:
                 name = f"{tool.title} ({tool.subtitle})"
             else:
@@ -458,19 +459,16 @@ class ToolboxWindow(QtWidgets.QMainWindow):
 
         self.update_log(f'Running: {tool.title} {tool.subtitle}...')
 
-        rez_command = resources.rez_command()
-
-        rez_wants = ' '.join(tool.rez_wants)
-
-        rez_command = f'{rez_command} {rez_wants}'
-
         process = QtCore.QProcess(self)
 
         if open_shell:
-            program, arguments = resources.shell_command(platform.system(), rez_command)
+            rez_env = f"{resources.rez_command()} {' '.join(tool.rez_wants)}"
+            program, arguments = resources.shell_command(platform.system(), rez_env)
             self.update_log(f'Command: {program} {" ".join(arguments)}')
             process.start(program, arguments)
         else:
-            command = f'{rez_command} -- {tool.command}'
+            command = resources.launch_command(
+                resources.rez_command(), tool.rez_wants, tool.command
+            )
             self.update_log(f'Command: {command}')
             process.startCommand(command)
