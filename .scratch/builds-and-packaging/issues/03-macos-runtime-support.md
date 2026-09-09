@@ -4,12 +4,12 @@
 
 **Blocked by:** 01
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] Config-path resolution has a macOS branch using `~/.config/toolbox/`; the app launches on macOS instead of crashing
-- [ ] `TOOLBOX_CONFIG` (file or directory) still overrides the default path on every platform
-- [ ] Existing Windows/Linux Config paths are unchanged (no migration of existing user Configs)
-- [ ] "Open Shell" has a macOS branch that opens a terminal inside the selected Rez environment
-- [ ] Seam B: config-path resolution is a pure function of (platform, environment), unit-tested across Windows, macOS, Linux, a `TOOLBOX_CONFIG` file, and a `TOOLBOX_CONFIG` directory
-- [ ] Seam C: config parsing is a pure function mapping a Config dict → ToolSet/Tool models, separated from disk reads and module-global mutation, unit-tested with well-formed and malformed input
-- [ ] A single temp-dir integration test covers the residual load-Config glue (read file, copy the default Config on first launch)
+- [x] Config-path resolution has a macOS branch using `~/.config/toolbox/`; the app launches on macOS instead of crashing
+- [x] `TOOLBOX_CONFIG` (file or directory) still overrides the default path on every platform
+- [x] Existing Windows/Linux Config paths are unchanged (no migration of existing user Configs)
+- [x] "Open Shell" has a macOS branch that opens a terminal inside the selected Rez environment
+- [x] Seam B: config-path resolution is a pure function of (platform, environment), unit-tested across Windows, macOS, Linux, a `TOOLBOX_CONFIG` file, and a `TOOLBOX_CONFIG` directory
+- [x] Seam C: config parsing is a pure function mapping a Config dict → ToolSet/Tool models, separated from disk reads and module-global mutation, unit-tested with well-formed and malformed input
+- [x] A single temp-dir integration test covers the residual load-Config glue (read file, copy the default Config on first launch)

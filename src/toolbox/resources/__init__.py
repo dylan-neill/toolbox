@@ -22,20 +22,46 @@ def example_config_text():
     return _assets.joinpath("example_config.json").read_text(encoding="utf-8")
 
 
+def config_path(system, environ):
+    """Seam B: resolve the user Config file path from platform + environment.
+
+    Pure branching logic; the only filesystem touch is classifying a
+    ``TOOLBOX_CONFIG`` override as a file or a directory. ``TOOLBOX_CONFIG`` (a
+    file or a directory) overrides on every platform. Otherwise, per ADR 0003,
+    all platforms — Windows, macOS (Darwin), and Linux — deliberately share
+    ``~/.config/toolbox/``; macOS used to fall through to ``None`` here and crash
+    on launch. ``system`` is part of the contract so a future native-directory
+    move has a seam to branch on.
+    """
+    override = environ.get('TOOLBOX_CONFIG')
+    if override:
+        path = os.path.expanduser(override)
+        if os.path.isdir(path):
+            path = os.path.join(path, "config.json")
+        return path
+
+    return os.path.expanduser(os.path.join("~", ".config", "toolbox", "config.json"))
+
+
+def shell_command(system, rez_command):
+    """Command that opens an interactive terminal inside ``rez_command``.
+
+    Returned as ``(program, arguments)`` rather than one string because QProcess
+    only splits on double quotes with no escaping, so the macOS AppleScript
+    (which embeds double quotes) cannot survive string tokenisation.
+    """
+    system = system.lower()
+    if system == 'windows':
+        return 'cmd.exe', ['/C', 'start', 'cmd.exe', '/K', *rez_command.split()]
+    if system == 'darwin':
+        script = f'tell application "Terminal" to do script "{rez_command}"'
+        return 'osascript', ['-e', script]
+    # Linux and anything else.
+    return 'gnome-terminal', ['--', *rez_command.split()]
+
+
 def load_config():
-
-    config_file = None
-    result = None
-
-    if 'TOOLBOX_CONFIG' in os.environ:
-        config_file = os.path.expanduser(os.environ['TOOLBOX_CONFIG'])
-        if os.path.isdir(config_file):
-            config_file = os.path.join(config_file, "config.json")
-    else:
-        if platform.system().lower() == 'linux':
-            config_file = os.path.expanduser("~/.config/toolbox/config.json")
-        elif platform.system().lower() == 'windows':
-            config_file = os.path.expanduser("~/.config/toolbox/config.json")
+    config_file = config_path(platform.system(), os.environ)
 
     if not os.path.isfile(config_file):
         config_dir = os.path.dirname(config_file)
@@ -46,9 +72,7 @@ def load_config():
         print(f"Default config created at: {config_file}")
 
     with open(config_file) as file_id:
-        result = json.load(file_id)
-
-    return result
+        return json.load(file_id)
 
 
 def python_command():

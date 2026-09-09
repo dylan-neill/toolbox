@@ -463,16 +463,14 @@ class ToolboxWindow(QtWidgets.QMainWindow):
         rez_wants = ' '.join(tool.rez_wants)
 
         rez_command = f'{rez_command} {rez_wants}'
-        command = ''
+
+        process = QtCore.QProcess(self)
 
         if open_shell:
-            if platform.system().lower() == 'windows':
-                command = f'cmd.exe /C start cmd.exe /K {rez_command}' # Super hack!
-            else:
-                command = f'gnome-terminal -- {rez_command}'
+            program, arguments = resources.shell_command(platform.system(), rez_command)
+            self.update_log(f'Command: {program} {" ".join(arguments)}')
+            process.start(program, arguments)
         else:
             command = f'{rez_command} -- {tool.command}'
-
-        self.update_log(f'Command: {command}')
-        process = QtCore.QProcess(self)
-        process.startCommand(command)
+            self.update_log(f'Command: {command}')
+            process.startCommand(command)
