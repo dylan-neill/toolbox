@@ -5,15 +5,18 @@ build-backend = "hatchling.build"
 [project]
 name = "toolbox"
 version = "0.6.0"
-description = "A launcher for DCC software that runs applications inside versioned Rez environments."
+description = "Launcher for DCC applications running inside versioned Rez environments."
 readme = "README.md"
 requires-python = ">=3.11,<3.15"
-authors = [{ name = "Dylan Neill" }]
+authors = [{ name = "Dylan Neill", email = "dylan@brkpt.co" }]
 license = { text = "MIT" }
 dependencies = [
     "PySide6>=6.11.2",
     "pywin32>=311; sys_platform == 'win32'",
 ]
+
+[project.urls]
+Homepage = "https://github.com/dylan-neill/toolbox"
 
 # GUI entry point: on Windows this launches via pythonw (no stray console
 # window), matching the taskbar-icon setup in toolbox/__main__.py.
@@ -32,3 +35,45 @@ packages = ["src/toolbox"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+
+# --- Briefcase packaging (ADR 0001) -----------------------------------------
+# `briefcase package <platform>` builds native installers: a Windows .msi, a
+# macOS .dmg (macOS 13+), and a Linux AppImage. The app runs `python -m toolbox`
+# inside the bundle, so src/toolbox/__main__.py:main is the entry point exactly
+# as `uv run toolbox` uses it. Version, url, author, description, license, and
+# runtime requirements are all inherited from [project] above — this table only
+# adds what Briefcase needs on top of the PEP 621 metadata.
+#
+# Signing/notarisation are deliberately NOT configured here: with no identity,
+# Briefcase packages ad-hoc-signed/unsigned artifacts (`briefcase package macOS
+# --adhoc-sign`, and CI passes no identity). Enabling real signing later is a
+# CLI/CI change (a `--identity`, an Apple team id) rather than a re-architecture.
+[tool.briefcase]
+project_name = "Toolbox"
+bundle = "co.brkpt"
+# [project] uses the older license = { text = ... } form; state the PEP 639
+# fields Briefcase wants explicitly so packaging stays warning-free.
+license = "MIT"
+license-files = ["LICENSE"]
+
+[tool.briefcase.app.toolbox]
+formal_name = "Toolbox"
+long_description = """Toolbox is a DCC software launcher aimed at 3D animation and visual effects production. It launches applications inside versioned Rez environments configured through Toolsets.
+"""
+sources = ["src/toolbox"]
+# requires is inherited from [project].dependencies: PySide6 everywhere, and
+# pywin32 only where its `sys_platform == 'win32'` marker matches.
+
+[tool.briefcase.app.toolbox.macOS]
+# The app icon is generated from the 512px master by bin/make_icns.sh; only the
+# macOS .icns is produced (ticket 05), so the icon is scoped to this platform.
+icon = "src/toolbox/resources/icons/app_icon"
+# Must match the PySide6 6.11 universal2 wheel floor or wheel resolution fails.
+min_os_version = "13.0"
+universal_build = true
+
+# Linux packaging defaults to system packages (.deb/.rpm); the spec targets an
+# AppImage, so CI selects it explicitly (`briefcase package linux AppImage`).
+# manylinux_2_28 matches the PySide6 6.11 wheel base.
+[tool.briefcase.app.toolbox.linux.appimage]
+manylinux = "manylinux_2_28"

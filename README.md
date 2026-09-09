@@ -11,7 +11,7 @@ Toolbox is a DCC software launcher aimed at 3D animation and visual effects prod
 - Detail panel showing Rez package configuration.
 - Open Shell button for opening a command prompt with the select Rez environment.
 - Windows desktop shortcut creation for Rez environments.
-- Can be built to a standalone .exe with PyInstaller
+- Builds to native installers on Windows, macOS, and Linux with Briefcase.
 
 ## Requirements
 
@@ -114,40 +114,38 @@ Icons are loaded from:
 resources\icons
 ```
 
-## Building a Windows EXE
+## Building installers
 
-Make sure the virtual environment is active and dependencies are installed:
+Toolbox is packaged with [Briefcase](https://briefcase.readthedocs.io/), which
+produces a native installer for the platform you build on: a Windows `.msi`, a
+macOS `.dmg` (macOS 13+), or a Linux AppImage. All three are configured under
+`[tool.briefcase]` in `pyproject.toml`. Build on the target OS:
 
-```powershell
-.\venv\Scripts\Activate.ps1
-python -m pip install -r requirements.txt
+```bash
+uv run briefcase create
+uv run briefcase build
+uv run briefcase package
 ```
 
-Build the executable with the included batch file:
+The installer is written to `dist/`.
 
-```powershell
-.\build_win.bat
+Builds currently ship **unsigned**. On macOS, package with an ad-hoc identity so
+the build succeeds without a code-signing certificate:
+
+```bash
+uv run briefcase package macOS --adhoc-sign
 ```
 
-This runs PyInstaller with the application icon and bundled `resources` folder:
+Signing and notarisation are otherwise left to CLI/CI flags (an `--identity`, an
+Apple team id) — enabling them later is a configuration change, not a rebuild of
+the packaging setup.
 
-```powershell
-pyinstaller --add-data=".\resources;resources" --windowed --onefile --icon="resources/icons/app_icon48.ico" toolbox.py
-```
+The macOS app icon (`src/toolbox/resources/icons/app_icon.icns`) is generated
+from the 512px master PNG by `bin/make_icns.sh` (macOS only).
 
-After a successful build, the executable is created at:
-
-```text
-dist\toolbox.exe
-```
-
-You can run it directly:
-
-```powershell
-.\dist\toolbox.exe
-```
-
-The generated `.exe` still depends on your workstation environment for Rez and the configured application commands. Make sure `rez-env` and any launched tools are available from the environment where Toolbox is started.
+An installed Toolbox still depends on the workstation environment for Rez and the
+configured application commands: make sure `rez-env` and any launched tools are
+available from the environment where Toolbox is started.
 
 ## Project Layout
 
@@ -159,8 +157,8 @@ toolbox\model.py              Tool and ToolSet dataclasses
 toolbox\resources\            Config/icon/command helpers plus bundled assets
 toolbox\resources\example_config.json  Default toolset config (seed for a new user Config)
 toolbox\resources\icons       Application and Toolbox icons
-build_win.bat                 Windows PyInstaller build command
-toolbox.spec                  PyInstaller spec file
+bin\make_icns.sh              Regenerate the macOS .icns from the master PNG
+pyproject.toml                Project metadata, dependencies, Briefcase config
 ```
 
 ## Notes
