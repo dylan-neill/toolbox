@@ -1,0 +1,165 @@
+# CI for Toolbox (spec: builds-and-packaging, ticket 06).
+#
+# Two jobs:
+#   * `test`  runs the full pytest suite on every push and pull request, across
+#     Windows, macOS, and Linux, headless via QT_QPA_PLATFORM=offscreen. A
+#     failing test fails the job (and therefore the workflow).
+#   * `build` runs only for a tagged release. It packages the native installer
+#     on each OS — a Windows .msi, a macOS .dmg, and a Linux AppImage (all via
+#     Briefcase) — and uploads them as artifacts. It requires `test` to pass
+#     first, so a broken commit can never produce a release build.
+#
+# Signing/notarisation stay off: with no certificate the macOS package is built
+# ad-hoc (unsigned). The guard below signs only if a MACOS_SIGNING_IDENTITY
+# secret is configured, so going public later is a secret + flag, not a rewrite.
+name: CI
+
+on:
+  push:
+  pull_request:
+
+# One in-flight run per ref; a newer push cancels the older run.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Test (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, macos-latest, ubuntu-latest]
+    env:
+      # Qt has no display on CI runners; force the offscreen platform plugin so
+      # the pytest-qt smoke test can construct the main window headlessly.
+      QT_QPA_PLATFORM: offscreen
+    steps:
+      - uses: actions/checkout@v7
+
+      # PySide6 dlopens EGL/GL/xkbcommon/dbus even under the offscreen plugin;
+      # ubuntu runners ship without them.
+      - name: Install Qt runtime libraries (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libegl1 libgl1 libxkbcommon0 libdbus-1-3
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          python-version: "3.12"
+          enable-cache: true
+
+      - name: Sync dependencies
+        run: uv sync
+
+      - name: Run tests
+        run: uv run pytest
+
+  build:
+    name: Build installer (${{ matrix.os }})
+    # Only build installers for a tagged release, and only once tests are green.
+    needs: test
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            briefcase-platform: windows
+          - os: macos-latest
+            briefcase-platform: macOS
+          - os: ubuntu-latest
+            briefcase-platform: linux AppImage
+    steps:
+      - uses: actions/checkout@v7
+
+      # Briefcase builds the Linux AppImage inside a manylinux Docker image, so
+      # the host only needs Qt libraries for anything it runs directly; the apt
+      # set here matches the test job and keeps briefcase's host-side steps happy.
+      - name: Install Qt runtime libraries (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libegl1 libgl1 libxkbcommon0 libdbus-1-3
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          python-version: "3.12"
+          enable-cache: true
+
+      - name: Sync dependencies
+        run: uv sync
+
+      - name: Create and build app bundle
+        shell: bash
+        run: |
+          uv run briefcase create ${{ matrix.briefcase-platform }}
+          uv run briefcase build ${{ matrix.briefcase-platform }}
+
+      # ADR 0004 trims the macOS bundle to the Qt Toolbox actually loads; a bad
+      # trim only fails at runtime. Launch the built .app headless (catches a
+      # missing linked framework via a dyld exit) and prove an .svg icon renders
+      # (catches a missing qsvg plugin, which would not crash the launch) before
+      # we package and publish it.
+      - name: Smoke-test built bundle (macOS)
+        if: runner.os == 'macOS'
+        shell: bash
+        env:
+          QT_QPA_PLATFORM: offscreen
+        run: |
+          app="$PWD/build/toolbox/macos/app/Toolbox.app"
+          "$app/Contents/MacOS/Toolbox" &
+          pid=$!
+          sleep 6
+          if ! kill -0 "$pid" 2>/dev/null; then
+            echo "::error::Packaged Toolbox.app exited on launch — broken bundle"
+            exit 1
+          fi
+          kill "$pid" 2>/dev/null || true
+          uv run python bin/verify_macos_bundle.py "$app" src/toolbox/resources/icons/houdini.svg
+          # Size ceiling so a regression that reinflates the bundle (QtWebEngine
+          # returning, or a slip back to a universal2 build) fails the workflow.
+          # The trimmed arm64 bundle is ~188 MB; 300 MB is generous headroom for
+          # Qt version drift while still catching the big regressions.
+          size_mb=$(du -sm "$app" | cut -f1)
+          echo "Toolbox.app is ${size_mb} MB"
+          if [ "$size_mb" -gt 300 ]; then
+            echo "::error::Toolbox.app is ${size_mb} MB (> 300 MB ceiling) — bundle trim regressed"
+            exit 1
+          fi
+
+      - name: Package installer
+        shell: bash
+        env:
+          MACOS_SIGNING_IDENTITY: ${{ secrets.MACOS_SIGNING_IDENTITY }}
+        run: |
+          if [ "${{ runner.os }}" = "macOS" ]; then
+            if [ -n "$MACOS_SIGNING_IDENTITY" ]; then
+              # A code-signing certificate is configured: produce a signed build.
+              uv run briefcase package macOS --identity "$MACOS_SIGNING_IDENTITY" --no-input
+            else
+              # No certificate: ship unsigned via ad-hoc signing. This is the
+              # guarded no-op until a signing identity is provisioned.
+              uv run briefcase package macOS --adhoc-sign --no-input
+            fi
+          else
+            uv run briefcase package ${{ matrix.briefcase-platform }} --no-input
+          fi
+
+      - name: Upload installer artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: toolbox-${{ runner.os }}-installer
+          path: |
+            dist/*.msi
+            dist/*.dmg
+            dist/*.AppImage
+          if-no-files-found: error

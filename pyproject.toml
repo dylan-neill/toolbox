@@ -1,0 +1,145 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "toolbox"
+version = "0.6.0"
+description = "Launcher for DCC applications running inside versioned Rez environments."
+readme = "README.md"
+requires-python = ">=3.11,<3.15"
+authors = [{ name = "Dylan Neill", email = "dylan@brkpt.co" }]
+license = { text = "MIT" }
+dependencies = [
+    # Essentials (not the full PySide6 metapackage) so the bundle omits
+    # PySide6-Addons — QtWebEngine's ~590 MB Chromium, Charts, Qt3D, Graphs —
+    # none of which Toolbox (QtCore/QtGui/QtWidgets only) uses. Same 6.11
+    # universal2 / macOS-13 wheel floor as the full package.
+    "PySide6-Essentials>=6.11.2",
+    "pywin32>=311; sys_platform == 'win32'",
+]
+
+[project.urls]
+Homepage = "https://github.com/dylan-neill/toolbox"
+
+# GUI entry point: on Windows this launches via pythonw (no stray console
+# window), matching the taskbar-icon setup in toolbox/__main__.py.
+[project.gui-scripts]
+toolbox = "toolbox.__main__:main"
+
+[dependency-groups]
+dev = [
+    "briefcase>=0.3.20",
+    "pytest>=8.0",
+    "pytest-qt>=4.4",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/toolbox"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+# --- Briefcase packaging (ADR 0001) -----------------------------------------
+# `briefcase package <platform>` builds native installers: a Windows .msi, a
+# macOS .dmg (macOS 13+), and a Linux AppImage. The app runs `python -m toolbox`
+# inside the bundle, so src/toolbox/__main__.py:main is the entry point exactly
+# as `uv run toolbox` uses it. Version, url, author, description, license, and
+# runtime requirements are all inherited from [project] above — this table only
+# adds what Briefcase needs on top of the PEP 621 metadata.
+#
+# Signing/notarisation are deliberately NOT configured here: with no identity,
+# Briefcase packages ad-hoc-signed/unsigned artifacts (`briefcase package macOS
+# --adhoc-sign`, and CI passes no identity). Enabling real signing later is a
+# CLI/CI change (a `--identity`, an Apple team id) rather than a re-architecture.
+[tool.briefcase]
+project_name = "Toolbox"
+bundle = "co.brkpt"
+# [project] uses the older license = { text = ... } form; state the PEP 639
+# fields Briefcase wants explicitly so packaging stays warning-free.
+license = "MIT"
+license-files = ["LICENSE"]
+
+[tool.briefcase.app.toolbox]
+formal_name = "Toolbox"
+long_description = """Toolbox is a DCC software launcher aimed at 3D animation and visual effects production. It launches applications inside versioned Rez environments configured through Toolsets.
+"""
+sources = ["src/toolbox"]
+# requires is inherited from [project].dependencies: PySide6 everywhere, and
+# pywin32 only where its `sys_platform == 'win32'` marker matches.
+
+[tool.briefcase.app.toolbox.macOS]
+# The app icon is generated from the 512px master by bin/make_icns.sh; only the
+# macOS .icns is produced (ticket 05), so the icon is scoped to this platform.
+icon = "src/toolbox/resources/icons/app_icon"
+# Must match the PySide6 6.11 wheel floor or wheel resolution fails.
+min_os_version = "13.0"
+# Apple-silicon only: drop the x86_64 slice (halves every binary). Intel Macs
+# are no longer a target; flip back to true to restore a universal2 build.
+universal_build = false
+# Toolbox imports only QtCore/QtGui/QtWidgets and renders .svg icons, so keep
+# just that stack (QtSvg + the qsvg image plugin for icons, QtDBus which QtGui
+# links) and strip the rest of Qt that Essentials still bundles — the QML/Quick
+# stack, the developer tools (Designer/Assistant/Linguist), and modules the app
+# never imports. Globs are matched against the build bundle at `briefcase
+# create` time. Removing an unused framework is safe: dyld only fails on a
+# missing library that a *loaded* one references, and nothing kept references
+# these.
+cleanup_paths = [
+    # Standalone Qt developer tools and the QML module tree — never used.
+    "**/PySide6/Assistant.app",
+    "**/PySide6/Designer.app",
+    "**/PySide6/Linguist.app",
+    "**/PySide6/qmlls",
+    "**/PySide6/qmlformat",
+    "**/PySide6/Qt/qml",
+    # Qt plugins Toolbox never loads. Kept: platforms (cocoa), styles,
+    # iconengines, imageformats (qsvg), generic.
+    "**/Qt/plugins/designer",
+    "**/Qt/plugins/qmllint",
+    "**/Qt/plugins/qmltooling",
+    "**/Qt/plugins/sqldrivers",
+    "**/Qt/plugins/vectorimageformats",
+    "**/Qt/plugins/networkinformation",
+    "**/Qt/plugins/tls",
+    "**/Qt/plugins/platforminputcontexts",
+    # Qt frameworks outside the Core/Gui/Widgets/Svg/DBus stack Toolbox uses.
+    "**/Qt/lib/QtQml*.framework",
+    "**/Qt/lib/QtQuick*.framework",
+    "**/Qt/lib/QtLabs*.framework",
+    "**/Qt/lib/QtLottie*.framework",
+    "**/Qt/lib/QtDesigner*.framework",
+    "**/Qt/lib/QtHelp.framework",
+    "**/Qt/lib/QtSql.framework",
+    "**/Qt/lib/QtTest.framework",
+    "**/Qt/lib/QtUiTools.framework",
+    "**/Qt/lib/QtConcurrent.framework",
+    "**/Qt/lib/QtXml.framework",
+    "**/Qt/lib/QtPrintSupport.framework",
+    "**/Qt/lib/QtNetwork.framework",
+    "**/Qt/lib/QtOpenGL.framework",
+    "**/Qt/lib/QtOpenGLWidgets.framework",
+    "**/Qt/lib/QtSvgWidgets.framework",
+    # Python bindings for modules Toolbox never imports.
+    "**/PySide6/QtQml*.abi3.so",
+    "**/PySide6/QtQuick*.abi3.so",
+    "**/PySide6/QtLabs*.abi3.so",
+    "**/PySide6/QtOpenGL.abi3.so",
+    "**/PySide6/QtOpenGLWidgets.abi3.so",
+    "**/PySide6/QtNetwork.abi3.so",
+    "**/PySide6/QtDesigner.abi3.so",
+    "**/PySide6/QtSql.abi3.so",
+    "**/PySide6/QtHelp.abi3.so",
+    "**/PySide6/QtTest.abi3.so",
+    "**/PySide6/QtUiTools.abi3.so",
+    "**/PySide6/QtConcurrent.abi3.so",
+    "**/PySide6/QtXml.abi3.so",
+    "**/PySide6/QtPrintSupport.abi3.so",
+    "**/PySide6/QtSvgWidgets.abi3.so",
+]
+
+# Linux packaging defaults to system packages (.deb/.rpm); the spec targets an
+# AppImage, so CI selects it explicitly (`briefcase package linux AppImage`).
+# manylinux_2_28 matches the PySide6 6.11 wheel base.
+[tool.briefcase.app.toolbox.linux.appimage]
+manylinux = "manylinux_2_28"

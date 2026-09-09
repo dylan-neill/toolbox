@@ -10,6 +10,7 @@ __pycache__/
 .Python
 env/
 build/
+.briefcase/
 develop-eggs/
 dist/
 downloads/
@@ -100,3 +101,6 @@ ENV/
 # Pycharm
 .idea
 .vscode
+
+# macOS
+.DS_Store
