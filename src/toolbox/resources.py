@@ -3,8 +3,8 @@ import platform
 import shutil
 import json
 
-# Get parent folder of the folder containing this script file (ie the app root path)
-app_path = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
+# Walk up from src/toolbox/resources.py to the repo root that holds resources/
+app_path = os.path.abspath(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 
 def icon_path(icon):
     return os.path.join(app_path, "resources", "icons", icon)

@@ -4,9 +4,9 @@ import sys
 from PySide6 import QtWidgets
 import platform
 
-from toolbox import globalvars
-from toolbox import data
-from toolbox import ui
+from . import globalvars
+from . import data
+from . import ui
 
 def main():
 
