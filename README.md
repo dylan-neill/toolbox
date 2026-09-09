@@ -1,4 +1,4 @@
-<img width="1270" height="734" alt="readme-screenshot" src="https://github.com/user-attachments/assets/40c68a23-2694-47b1-b7f5-fd3f1dc1eab3" />
+![readme-screenshot](https://github.com/user-attachments/assets/40c68a23-2694-47b1-b7f5-fd3f1dc1eab3)
 
 # Toolbox
 
@@ -20,40 +20,30 @@ Toolbox is a DCC software launcher aimed at 3D animation and visual effects prod
 - [uv](https://docs.astral.sh/uv/) for dependency management and running.
 - Rez installed and available on `PATH` as `rez-env`.
 
-Dependencies are declared in `pyproject.toml` and locked in `uv.lock`; `uv`
-installs everything (including a matching Python) from those — there is no
-`requirements.txt`.
+Dependencies are declared in `pyproject.toml` and locked in `uv.lock`; `uv` installs everything (including a matching Python) from those — there is no `requirements.txt`.
 
 ## Running from source
 
-Install [uv](https://docs.astral.sh/uv/getting-started/installation/), then from
-the repository root:
+Install [uv](https://docs.astral.sh/uv/getting-started/installation/), then from the repository root:
 
 ```bash
 uv sync
 uv run toolbox
 ```
 
-`uv sync` creates a virtual environment and installs the locked dependencies;
-`uv run toolbox` launches the app (equivalent to `python -m toolbox`). No manual
-virtualenv activation is needed.
+`uv sync` creates a virtual environment and installs the locked dependencies; `uv run toolbox` launches the app (equivalent to `python -m toolbox`).
 
 ## Configuration
 
-On first launch, Toolbox creates a config file at (`~` is `%USERPROFILE%` on
-Windows):
+On first launch, Toolbox creates a config file at (`~` is `%USERPROFILE%` on Windows):
 
 ```text
 ~/.config/toolbox/config.json
 ```
 
-This location is the same on Windows, macOS, and Linux. The default config is
-seeded from the bundled `example_config.json` (shipped as package data inside
-`src/toolbox/resources/`, so it resolves from a source checkout and from an
-installed build alike).
+The default config is seeded from the bundled `example_config.json` (shipped as package data inside `src/toolbox/resources/`, so it resolves from a source checkout and from an installed build alike).
 
-You can point Toolbox at a specific config file or config directory with the
-`TOOLBOX_CONFIG` environment variable:
+You can point Toolbox at a specific config file or config directory with the `TOOLBOX_CONFIG` environment variable:
 
 ```bash
 TOOLBOX_CONFIG=/path/to/config.json uv run toolbox
@@ -64,8 +54,7 @@ $env:TOOLBOX_CONFIG = "C:\path\to\config.json"
 uv run toolbox
 ```
 
-If `TOOLBOX_CONFIG` points to a directory, Toolbox will look for `config.json`
-inside that directory.
+If `TOOLBOX_CONFIG` points to a directory, Toolbox will look for `config.json` inside that directory.
 
 ### Config format
 
@@ -101,24 +90,17 @@ The `icon` field names a file bundled under `src/toolbox/resources/icons`.
 
 ## Testing
 
-The test suite covers the launcher's pure logic (launch-command construction,
-config-path resolution, config parsing, asset resolution) plus a headless GUI
-smoke test. Run it with:
+The test suite covers the launcher's pure logic (launch-command construction, config-path resolution, config parsing, asset resolution) plus a headless GUI smoke test. Run it with:
 
 ```bash
 uv run pytest
 ```
 
-The GUI test runs headless via `QT_QPA_PLATFORM=offscreen`, so no display is
-required. GitHub Actions runs the full suite on Windows, macOS, and Linux for
-every push and pull request.
+The GUI test runs headless via `QT_QPA_PLATFORM=offscreen`, so no display is required. GitHub Actions runs the full suite on Windows, macOS, and Linux for every push and pull request.
 
 ## Building installers
 
-Toolbox is packaged with [Briefcase](https://briefcase.readthedocs.io/), which
-produces a native installer for the platform you build on: a Windows `.msi`, a
-macOS `.dmg` (macOS 13+), or a Linux AppImage. All three are configured under
-`[tool.briefcase]` in `pyproject.toml`. Build on the target OS:
+Toolbox is packaged with [Briefcase](https://briefcase.readthedocs.io/), which produces a native installer for the platform you build on: a Windows `.msi`, a macOS `.dmg` (macOS 13+), or a Linux AppImage. All three are configured under `[tool.briefcase]` in `pyproject.toml`. Build on the target OS:
 
 ```bash
 uv run briefcase create
@@ -126,32 +108,21 @@ uv run briefcase build
 uv run briefcase package
 ```
 
-The installer is written to `dist/`. On a tagged release, GitHub Actions builds
-all three automatically and uploads them as artifacts.
+The installer is written to `dist/`. On a tagged release, GitHub Actions builds all three automatically and uploads them as artifacts.
 
-The macOS build is **Apple-silicon only** (arm64) and trims Qt down to the
-modules Toolbox actually uses, so the installer is ~50 MB rather than ~420 MB
-(see `docs/adr/0004-macos-bundle-size-reduction.md`). Intel Macs are no longer a
-build target; flip `universal_build = true` in `pyproject.toml` to restore a
-universal2 build.
+The macOS build is **Apple-silicon only** (arm64) and trims Qt down to the modules Toolbox actually uses, so the installer is ~50 MB rather than ~420 MB (see `docs/adr/0004-macos-bundle-size-reduction.md`). Intel Macs are no longer a build target; flip `universal_build = true` in `pyproject.toml` to restore a universal2 build.
 
-Builds currently ship **unsigned**. On macOS, package with an ad-hoc identity so
-the build succeeds without a code-signing certificate:
+Builds currently ship **unsigned**. On macOS, package with an ad-hoc identity so the build succeeds without a code-signing certificate:
 
 ```bash
 uv run briefcase package macOS --adhoc-sign
 ```
 
-Signing and notarisation are otherwise left to CLI/CI flags (an `--identity`, an
-Apple team id) — enabling them later is a configuration change, not a rebuild of
-the packaging setup.
+Signing and notarisation are otherwise left to CLI/CI flags (an `--identity`, an Apple team id) — enabling them later is a configuration change, not a rebuild of the packaging setup.
 
-The macOS app icon (`src/toolbox/resources/icons/app_icon.icns`) is generated
-from the 512px master PNG by `bin/make_icns.sh` (macOS only).
+The macOS app icon (`src/toolbox/resources/icons/app_icon.icns`) is generated from the 512px master PNG by `bin/make_icns.sh` (macOS only).
 
-An installed Toolbox still depends on the workstation environment for Rez and the
-configured application commands: make sure `rez-env` and any launched tools are
-available from the environment where Toolbox is started.
+An installed Toolbox still depends on the workstation environment for Rez and the configured application commands: make sure `rez-env` and any launched tools are available from the environment where Toolbox is started.
 
 ## Project Layout
 
