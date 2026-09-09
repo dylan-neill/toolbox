@@ -147,4 +147,4 @@ pyproject.toml                Project metadata, dependencies, Briefcase config
 
 ## Notes
 
-There are a bunch of UI elements included that are disabled because they aren't implemented yet or haven't been maintained
+There are multiple UI elements that are disabled which are placeholders for future features.
