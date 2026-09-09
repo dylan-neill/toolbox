@@ -2,16 +2,16 @@
 
 import sys
 from PySide6 import QtWidgets
-import platform
 
 from . import globalvars
 from . import data
 from . import ui
 
-def main():
+def main() -> None:
 
-    # Set the app id in windows so we get a taskbar icon
-    if platform.system().lower() == 'windows':
+    # Set the app id in windows so we get a taskbar icon. sys.platform (not
+    # platform.system()) so pyright narrows the ctypes.windll access to Windows.
+    if sys.platform == "win32":
         import ctypes
         myappid = 'dn.toolbox.1' # arbitrary string
         ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)

@@ -1,16 +1,21 @@
+# Builds a QPalette entirely from Qt enum members (QPalette.ColorGroup /
+# ColorRole, Qt.BrushStyle). PySide6 6.11's stubs expose these only as scoped
+# enums, so the flat access this file uses (valid at runtime) trips the
+# stub-driven rules. Per ADR 0005 this Qt-boundary file runs the relaxed profile.
+# pyright: reportUnknownMemberType=false, reportUnknownArgumentType=false, reportAttributeAccessIssue=false
 
 from PySide6 import QtCore, QtGui
 
-app_name = 'Toolbox'
-version = (0,6,0)
+app_name: str = 'Toolbox'
+version: tuple[int, int, int] = (0, 6, 0)
 
-def version_string():
+def version_string() -> str:
     return f'v{version[0]}.{version[1]}.{version[2]}'
 
-def name_with_version():
+def name_with_version() -> str:
     return f'{app_name} {version_string()}'
 
-def palette():
+def palette() -> QtGui.QPalette:
     palette = QtGui.QPalette()
     brush = QtGui.QBrush(QtGui.QColor(255, 255, 255))
     brush.setStyle(QtCore.Qt.SolidPattern)

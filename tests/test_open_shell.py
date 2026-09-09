@@ -10,20 +10,20 @@ from toolbox import resources
 REZ = "rez-env maya-2025 site"
 
 
-def test_windows_opens_cmd_in_rez_env():
+def test_windows_opens_cmd_in_rez_env() -> None:
     program, args = resources.shell_command("Windows", REZ)
     assert program == "cmd.exe"
     # The rez invocation is passed through to the new shell.
     assert args[-3:] == ["rez-env", "maya-2025", "site"]
 
 
-def test_linux_opens_gnome_terminal_in_rez_env():
+def test_linux_opens_gnome_terminal_in_rez_env() -> None:
     program, args = resources.shell_command("Linux", REZ)
     assert program == "gnome-terminal"
     assert args == ["--", "rez-env", "maya-2025", "site"]
 
 
-def test_macos_opens_terminal_via_osascript():
+def test_macos_opens_terminal_via_osascript() -> None:
     program, args = resources.shell_command("Darwin", REZ)
     assert program == "osascript"
     assert args[0] == "-e"

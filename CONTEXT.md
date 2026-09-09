@@ -27,8 +27,9 @@ Joined with the launch command to form the `rez-env … -- <command>` invocation
 _Avoid_: Packages, dependencies, requirements (those are ambiguous with Python packaging).
 
 **Job**:
-An optional Rez context identifier applied to every Tool in a Toolset, tying a
-group of launches to a specific production job.
+An optional Rez context identifier recorded on a Toolset, tying that group of
+launches to a specific production job. Read from Config and held on the Toolset;
+recorded intent only — it is not yet applied to the launch invocation.
 
 **Config**:
 The user's `config.json` defining their Toolsets and Tools. Lives in the user's
