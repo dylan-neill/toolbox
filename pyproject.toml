@@ -11,7 +11,11 @@ requires-python = ">=3.11,<3.15"
 authors = [{ name = "Dylan Neill", email = "dylan@brkpt.co" }]
 license = { text = "MIT" }
 dependencies = [
-    "PySide6>=6.11.2",
+    # Essentials (not the full PySide6 metapackage) so the bundle omits
+    # PySide6-Addons — QtWebEngine's ~590 MB Chromium, Charts, Qt3D, Graphs —
+    # none of which Toolbox (QtCore/QtGui/QtWidgets only) uses. Same 6.11
+    # universal2 / macOS-13 wheel floor as the full package.
+    "PySide6-Essentials>=6.11.2",
     "pywin32>=311; sys_platform == 'win32'",
 ]
 
@@ -68,9 +72,71 @@ sources = ["src/toolbox"]
 # The app icon is generated from the 512px master by bin/make_icns.sh; only the
 # macOS .icns is produced (ticket 05), so the icon is scoped to this platform.
 icon = "src/toolbox/resources/icons/app_icon"
-# Must match the PySide6 6.11 universal2 wheel floor or wheel resolution fails.
+# Must match the PySide6 6.11 wheel floor or wheel resolution fails.
 min_os_version = "13.0"
-universal_build = true
+# Apple-silicon only: drop the x86_64 slice (halves every binary). Intel Macs
+# are no longer a target; flip back to true to restore a universal2 build.
+universal_build = false
+# Toolbox imports only QtCore/QtGui/QtWidgets and renders .svg icons, so keep
+# just that stack (QtSvg + the qsvg image plugin for icons, QtDBus which QtGui
+# links) and strip the rest of Qt that Essentials still bundles — the QML/Quick
+# stack, the developer tools (Designer/Assistant/Linguist), and modules the app
+# never imports. Globs are matched against the build bundle at `briefcase
+# create` time. Removing an unused framework is safe: dyld only fails on a
+# missing library that a *loaded* one references, and nothing kept references
+# these.
+cleanup_paths = [
+    # Standalone Qt developer tools and the QML module tree — never used.
+    "**/PySide6/Assistant.app",
+    "**/PySide6/Designer.app",
+    "**/PySide6/Linguist.app",
+    "**/PySide6/qmlls",
+    "**/PySide6/qmlformat",
+    "**/PySide6/Qt/qml",
+    # Qt plugins Toolbox never loads. Kept: platforms (cocoa), styles,
+    # iconengines, imageformats (qsvg), generic.
+    "**/Qt/plugins/designer",
+    "**/Qt/plugins/qmllint",
+    "**/Qt/plugins/qmltooling",
+    "**/Qt/plugins/sqldrivers",
+    "**/Qt/plugins/vectorimageformats",
+    "**/Qt/plugins/networkinformation",
+    "**/Qt/plugins/tls",
+    "**/Qt/plugins/platforminputcontexts",
+    # Qt frameworks outside the Core/Gui/Widgets/Svg/DBus stack Toolbox uses.
+    "**/Qt/lib/QtQml*.framework",
+    "**/Qt/lib/QtQuick*.framework",
+    "**/Qt/lib/QtLabs*.framework",
+    "**/Qt/lib/QtLottie*.framework",
+    "**/Qt/lib/QtDesigner*.framework",
+    "**/Qt/lib/QtHelp.framework",
+    "**/Qt/lib/QtSql.framework",
+    "**/Qt/lib/QtTest.framework",
+    "**/Qt/lib/QtUiTools.framework",
+    "**/Qt/lib/QtConcurrent.framework",
+    "**/Qt/lib/QtXml.framework",
+    "**/Qt/lib/QtPrintSupport.framework",
+    "**/Qt/lib/QtNetwork.framework",
+    "**/Qt/lib/QtOpenGL.framework",
+    "**/Qt/lib/QtOpenGLWidgets.framework",
+    "**/Qt/lib/QtSvgWidgets.framework",
+    # Python bindings for modules Toolbox never imports.
+    "**/PySide6/QtQml*.abi3.so",
+    "**/PySide6/QtQuick*.abi3.so",
+    "**/PySide6/QtLabs*.abi3.so",
+    "**/PySide6/QtOpenGL.abi3.so",
+    "**/PySide6/QtOpenGLWidgets.abi3.so",
+    "**/PySide6/QtNetwork.abi3.so",
+    "**/PySide6/QtDesigner.abi3.so",
+    "**/PySide6/QtSql.abi3.so",
+    "**/PySide6/QtHelp.abi3.so",
+    "**/PySide6/QtTest.abi3.so",
+    "**/PySide6/QtUiTools.abi3.so",
+    "**/PySide6/QtConcurrent.abi3.so",
+    "**/PySide6/QtXml.abi3.so",
+    "**/PySide6/QtPrintSupport.abi3.so",
+    "**/PySide6/QtSvgWidgets.abi3.so",
+]
 
 # Linux packaging defaults to system packages (.deb/.rpm); the spec targets an
 # AppImage, so CI selects it explicitly (`briefcase package linux AppImage`).

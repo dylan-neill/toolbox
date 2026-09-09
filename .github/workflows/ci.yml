@@ -104,6 +104,38 @@ jobs:
           uv run briefcase create ${{ matrix.briefcase-platform }}
           uv run briefcase build ${{ matrix.briefcase-platform }}
 
+      # ADR 0004 trims the macOS bundle to the Qt Toolbox actually loads; a bad
+      # trim only fails at runtime. Launch the built .app headless (catches a
+      # missing linked framework via a dyld exit) and prove an .svg icon renders
+      # (catches a missing qsvg plugin, which would not crash the launch) before
+      # we package and publish it.
+      - name: Smoke-test built bundle (macOS)
+        if: runner.os == 'macOS'
+        shell: bash
+        env:
+          QT_QPA_PLATFORM: offscreen
+        run: |
+          app="$PWD/build/toolbox/macos/app/Toolbox.app"
+          "$app/Contents/MacOS/Toolbox" &
+          pid=$!
+          sleep 6
+          if ! kill -0 "$pid" 2>/dev/null; then
+            echo "::error::Packaged Toolbox.app exited on launch — broken bundle"
+            exit 1
+          fi
+          kill "$pid" 2>/dev/null || true
+          uv run python bin/verify_macos_bundle.py "$app" src/toolbox/resources/icons/houdini.svg
+          # Size ceiling so a regression that reinflates the bundle (QtWebEngine
+          # returning, or a slip back to a universal2 build) fails the workflow.
+          # The trimmed arm64 bundle is ~188 MB; 300 MB is generous headroom for
+          # Qt version drift while still catching the big regressions.
+          size_mb=$(du -sm "$app" | cut -f1)
+          echo "Toolbox.app is ${size_mb} MB"
+          if [ "$size_mb" -gt 300 ]; then
+            echo "::error::Toolbox.app is ${size_mb} MB (> 300 MB ceiling) — bundle trim regressed"
+            exit 1
+          fi
+
       - name: Package installer
         shell: bash
         env:
