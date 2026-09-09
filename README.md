@@ -15,72 +15,61 @@ Toolbox is a DCC software launcher aimed at 3D animation and visual effects prod
 
 ## Requirements
 
-- Windows 10 or newer.
-- Python 3.10 or newer.
+- Windows, macOS, or Linux. The launcher runs on all three from source.
+- Python 3.11 through 3.14.
+- [uv](https://docs.astral.sh/uv/) for dependency management and running.
 - Rez installed and available on `PATH` as `rez-env`.
-- Linux and MacOS should work but haven't been tested recently (but no build support).
 
-Python package requirements are listed in `requirements.txt`.
+Dependencies are declared in `pyproject.toml` and locked in `uv.lock`; `uv`
+installs everything (including a matching Python) from those — there is no
+`requirements.txt`.
 
-## Installation on Windows
+## Running from source
 
-Open PowerShell in the repository root and create a virtual environment:
+Install [uv](https://docs.astral.sh/uv/getting-started/installation/), then from
+the repository root:
 
-```powershell
-py -m venv venv
+```bash
+uv sync
+uv run toolbox
 ```
 
-Activate it:
-
-```powershell
-.\venv\Scripts\Activate.ps1
-```
-
-If PowerShell blocks activation scripts, allow scripts for the current user and try again:
-
-```powershell
-Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned
-```
-
-Install the Python dependencies:
-
-```powershell
-python -m pip install --upgrade pip
-python -m pip install -r requirements.txt
-```
-
-Run Toolbox from source:
-
-```powershell
-python toolbox.py
-```
+`uv sync` creates a virtual environment and installs the locked dependencies;
+`uv run toolbox` launches the app (equivalent to `python -m toolbox`). No manual
+virtualenv activation is needed.
 
 ## Configuration
 
-On first launch, Toolbox creates a config file at:
+On first launch, Toolbox creates a config file at (`~` is `%USERPROFILE%` on
+Windows):
 
 ```text
-%USERPROFILE%\.config\toolbox\config.json
+~/.config/toolbox/config.json
 ```
 
-The default config is copied from:
+This location is the same on Windows, macOS, and Linux. The default config is
+seeded from the bundled `example_config.json` (shipped as package data inside
+`src/toolbox/resources/`, so it resolves from a source checkout and from an
+installed build alike).
 
-```text
-resources\example_config.json
+You can point Toolbox at a specific config file or config directory with the
+`TOOLBOX_CONFIG` environment variable:
+
+```bash
+TOOLBOX_CONFIG=/path/to/config.json uv run toolbox
 ```
-
-You can also point Toolbox at a specific config file or config directory with the `TOOLBOX_CONFIG` environment variable:
 
 ```powershell
 $env:TOOLBOX_CONFIG = "C:\path\to\config.json"
-python toolbox.py
+uv run toolbox
 ```
 
-If `TOOLBOX_CONFIG` points to a directory, Toolbox will look for `config.json` inside that directory.
+If `TOOLBOX_CONFIG` points to a directory, Toolbox will look for `config.json`
+inside that directory.
 
 ### Config format
 
-Each config file contains `toolsets`. Each toolset contains a list of `tools` ie Rez environments with launchable applications. The `resources/config_example.json` file contains more example tool setups.
+Each config file contains `toolsets`. Each toolset contains a list of `tools` ie Rez environments with launchable applications. The bundled `src/toolbox/resources/example_config.json` file contains more example tool setups.
 
 ```json
 {
@@ -108,11 +97,21 @@ Toolbox builds the launch command from the `rez_wants` and `command` fields:
 rez-env maya-2025 redshift-2025.2 site_tools site_ocio -- maya
 ```
 
-Icons are loaded from:
+The `icon` field names a file bundled under `src/toolbox/resources/icons`.
 
-```text
-resources\icons
+## Testing
+
+The test suite covers the launcher's pure logic (launch-command construction,
+config-path resolution, config parsing, asset resolution) plus a headless GUI
+smoke test. Run it with:
+
+```bash
+uv run pytest
 ```
+
+The GUI test runs headless via `QT_QPA_PLATFORM=offscreen`, so no display is
+required. GitHub Actions runs the full suite on Windows, macOS, and Linux for
+every push and pull request.
 
 ## Building installers
 
@@ -127,7 +126,14 @@ uv run briefcase build
 uv run briefcase package
 ```
 
-The installer is written to `dist/`.
+The installer is written to `dist/`. On a tagged release, GitHub Actions builds
+all three automatically and uploads them as artifacts.
+
+The macOS build is **Apple-silicon only** (arm64) and trims Qt down to the
+modules Toolbox actually uses, so the installer is ~50 MB rather than ~420 MB
+(see `docs/adr/0004-macos-bundle-size-reduction.md`). Intel Macs are no longer a
+build target; flip `universal_build = true` in `pyproject.toml` to restore a
+universal2 build.
 
 Builds currently ship **unsigned**. On macOS, package with an ad-hoc identity so
 the build succeeds without a code-signing certificate:
@@ -150,15 +156,22 @@ available from the environment where Toolbox is started.
 ## Project Layout
 
 ```text
-toolbox.py                    Application entry point
-toolbox\ui.py                 PySide6 user interface and launch actions
-toolbox\data.py               Config loading into tool/toolset models
-toolbox\model.py              Tool and ToolSet dataclasses
-toolbox\resources\            Config/icon/command helpers plus bundled assets
-toolbox\resources\example_config.json  Default toolset config (seed for a new user Config)
-toolbox\resources\icons       Application and Toolbox icons
-bin\make_icns.sh              Regenerate the macOS .icns from the master PNG
+src/toolbox/__main__.py       Application entry point (uv run toolbox)
+src/toolbox/ui.py             PySide6 user interface and launch actions
+src/toolbox/data.py           Config parsing into Tool/ToolSet models (seam C)
+src/toolbox/model.py          Tool and ToolSet dataclasses
+src/toolbox/util.py           Windows desktop-shortcut creation
+src/toolbox/globalvars.py     App name and version
+src/toolbox/resources/        Bundled assets + pure seams: config_path (seam B),
+                              launch_command (seam A), shell_command (Open Shell),
+                              asset accessors (seam D)
+src/toolbox/resources/example_config.json  Default toolset config (seed for a new user Config)
+src/toolbox/resources/icons   Application and Toolbox icons
+tests/                        pytest suite (pure-logic tests + headless smoke test)
+bin/make_icns.sh              Regenerate the macOS .icns from the master PNG
+bin/verify_macos_bundle.py    CI check that a trimmed macOS bundle renders icons
 pyproject.toml                Project metadata, dependencies, Briefcase config
+.github/workflows/ci.yml      Test matrix + tagged-release installer builds
 ```
 
 ## Notes
