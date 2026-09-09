@@ -4,10 +4,10 @@
 
 **Blocked by:** 01
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] Bundled assets (icons + example Config) live inside the package and load via `importlib.resources`
-- [ ] The source-tree-relative `__file__` asset lookup is gone
-- [ ] Running from source still resolves every icon and the example Config
-- [ ] Seam D: a test asserts that a known bundled asset (an icon and the example Config) resolves
-- [ ] The user's Config in `~/.config/toolbox/` is unaffected — only read-only bundled data moved
+- [x] Bundled assets (icons + example Config) live inside the package and load via `importlib.resources`
+- [x] The source-tree-relative `__file__` asset lookup is gone
+- [x] Running from source still resolves every icon and the example Config
+- [x] Seam D: a test asserts that a known bundled asset (an icon and the example Config) resolves
+- [x] The user's Config in `~/.config/toolbox/` is unaffected — only read-only bundled data moved

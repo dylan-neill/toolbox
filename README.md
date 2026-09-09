@@ -156,9 +156,9 @@ toolbox.py                    Application entry point
 toolbox\ui.py                 PySide6 user interface and launch actions
 toolbox\data.py               Config loading into tool/toolset models
 toolbox\model.py              Tool and ToolSet dataclasses
-toolbox\resources.py          Config, icon, and command path helpers
-resources\default_config.json Default toolset config
-resources\icons               Application and Toolbox icons
+toolbox\resources\            Config/icon/command helpers plus bundled assets
+toolbox\resources\example_config.json  Default toolset config (seed for a new user Config)
+toolbox\resources\icons       Application and Toolbox icons
 build_win.bat                 Windows PyInstaller build command
 toolbox.spec                  PyInstaller spec file
 ```
