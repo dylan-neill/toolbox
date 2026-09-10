@@ -51,6 +51,15 @@ HITL decision tickets; `research` for the terminal ticket. Read `CONTEXT.md` and
 
 <!-- index: one line per resolved ticket, gist + link; detail lives in the ticket -->
 
+- [Terminal setting → Open Shell wiring](issues/04-terminal-setting-open-shell-wiring.md):
+  a data-driven per-OS terminal registry maps `terminal_id` → `(program,
+  args-template)`; `shell_command` becomes
+  `shell_command(system, rez_tokens, terminal_id, custom_command=None)`, pure,
+  with a `{command}` placeholder inserted joined or expanded per template. Custom
+  = a `{program, args}` object (refines 03's `terminal_command` shape). Unset =
+  today's per-OS default byte-for-byte; full list + Custom offered, no install
+  detection; Ghostty kept via CLI binary (**verify on-device** — spec task); no
+  keep-open flags.
 - [Settings store & config resolution](issues/03-settings-store-and-config-resolution.md):
   flat versioned `settings.json` (`config_path`, `terminal_id`/`terminal_command`,
   base64 `window_geometry`, `last_toolset`; all keys optional); a dedicated
