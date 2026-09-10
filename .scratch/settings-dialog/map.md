@@ -51,6 +51,11 @@ HITL decision tickets; `research` for the terminal ticket. Read `CONTEXT.md` and
 
 <!-- index: one line per resolved ticket, gist + link; detail lives in the ticket -->
 
+- [Author the Settings spec](issues/06-author-settings-spec.md): the destination
+  — `spec.md` written, consolidating all five decisions (store, config
+  resolution, terminal wiring, dialog, main-window, docs/tests) with scope and a
+  Ghostty verification task. **Map complete; ready to hand off for
+  implementation.**
 - [Live reload, entry points & persistence](issues/05-reload-entry-points-persistence.md):
   a top bar above the grid holds the Toolsets combo + refresh (`SP_BrowserReload`)
   + gear (bundled icon) buttons; one `reload_config()` (refresh + post-save) that

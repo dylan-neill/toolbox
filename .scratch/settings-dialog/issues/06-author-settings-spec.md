@@ -1,7 +1,7 @@
 # 06 — Author the Settings spec
 
 Type: task
-Status: open
+Status: resolved
 Blocked by: 01, 02, 03, 04, 05
 
 ## Question
@@ -25,3 +25,13 @@ one coherent spec. It is blocked until all of them resolve. The spec should cove
 
 Match the repo's existing spec shape (see `.scratch/typed-python/spec.md` and
 `.scratch/builds-and-packaging/spec.md`).
+
+## Answer
+
+Spec authored at `.scratch/settings-dialog/spec.md`, consolidating all five
+resolved decisions (Goal / Domain / Decisions in six areas — store, config
+resolution, terminal wiring, dialog, main-window, assets+docs+tests / Scope /
+Done when). Matches the repo's spec shape; links ADR 0006 and the research branch.
+Carries the Ghostty-on-macOS on-device verification task into the Scope section
+for the implementer. The map is now decision-complete and the destination reached
+— hand `spec.md` to an implementation session.
