@@ -51,6 +51,13 @@ HITL decision tickets; `research` for the terminal ticket. Read `CONTEXT.md` and
 
 <!-- index: one line per resolved ticket, gist + link; detail lives in the ticket -->
 
+- [Settings store & config resolution](issues/03-settings-store-and-config-resolution.md):
+  flat versioned `settings.json` (`config_path`, `terminal_id`/`terminal_command`,
+  base64 `window_geometry`, `last_toolset`; all keys optional); a dedicated
+  `settings.py` module owns it; `config_path` gains a pure third param
+  `setting_config_path` with precedence env › setting (file) › default; missing
+  file = defaults (no seed), invalid config path falls back + logs + keeps the
+  setting. ADR 0006 records the JSON-not-QSettings choice.
 - [Settings domain model & CONTEXT.md](issues/02-settings-domain-model.md):
   **Settings** = app-level state (which Config to load, the terminal it opens
   shells in, + silent no-UI values: window geometry, last Toolset); one entry =
@@ -69,10 +76,8 @@ HITL decision tickets; `research` for the terminal ticket. Read `CONTEXT.md` and
 
 <!-- in-scope fog too dim to ticket yet; graduates as the frontier advances -->
 
-- Whether `settings.json` needs seeding/migration handling parallel to
-  `config.json`'s first-launch creation — folds into **Settings store & config
-  resolution** once its schema is fixed; promote to its own ticket only if it
-  proves larger than a paragraph in that ticket.
+_(none — the seeding/migration question was answered within Settings store &
+config resolution: no seed, lazy write; migration caveat recorded in ADR 0006.)_
 
 ## Out of scope
 
