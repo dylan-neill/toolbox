@@ -51,6 +51,13 @@ HITL decision tickets; `research` for the terminal ticket. Read `CONTEXT.md` and
 
 <!-- index: one line per resolved ticket, gist + link; detail lives in the ticket -->
 
+- [Live reload, entry points & persistence](issues/05-reload-entry-points-persistence.md):
+  a top bar above the grid holds the Toolsets combo + refresh (`SP_BrowserReload`)
+  + gear (bundled icon) buttons; one `reload_config()` (refresh + post-save) that
+  catches errors, logs, and keeps the current grid rather than crashing; reload
+  preserves the current toolset by name (launch restores the `last_toolset`
+  setting); geometry saved on `closeEvent`, `last_toolset` saved on change (both
+  load-modify-write; guard the on-change save against programmatic combo updates).
 - [Terminal setting → Open Shell wiring](issues/04-terminal-setting-open-shell-wiring.md):
   a data-driven per-OS terminal registry maps `terminal_id` → `(program,
   args-template)`; `shell_command` becomes
