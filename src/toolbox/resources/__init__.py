@@ -2,8 +2,10 @@ import importlib.resources
 import json
 import os
 import platform
-from collections.abc import Mapping
+from collections.abc import Callable, Mapping
 from typing import TYPE_CHECKING, cast
+
+from .. import settings
 
 if TYPE_CHECKING:
     # Imported for typing only: importing data at runtime would form a cycle
@@ -31,16 +33,27 @@ def example_config_text() -> str:
     return _assets.joinpath("example_config.json").read_text(encoding="utf-8")
 
 
-def config_path(system: str, environ: Mapping[str, str]) -> str:
-    """Seam B: resolve the user Config file path from platform + environment.
+def config_path(
+    system: str,
+    environ: Mapping[str, str],
+    setting_config_path: str | None,
+) -> str:
+    """Seam B: resolve the user Config file path from platform, environment, and
+    the saved ``config_path`` setting.
+
+    Precedence (spec §2): ``TOOLBOX_CONFIG`` env (file **or** dir) ›
+    ``settings.json`` ``config_path`` (**file only**) › the default
+    ``~/.config/toolbox/config.json``. So a user can pick their Config from the
+    Settings file with no environment variable, while ``TOOLBOX_CONFIG`` still
+    overrides it.
 
     Pure branching logic; the only filesystem touch is classifying a
-    ``TOOLBOX_CONFIG`` override as a file or a directory. ``TOOLBOX_CONFIG`` (a
-    file or a directory) overrides on every platform. Otherwise, per ADR 0003,
-    all platforms — Windows, macOS (Darwin), and Linux — deliberately share
-    ``~/.config/toolbox/``; macOS used to fall through to ``None`` here and crash
-    on launch. ``system`` is part of the contract so a future native-directory
-    move has a seam to branch on.
+    ``TOOLBOX_CONFIG`` override as a file or a directory (the saved setting is
+    taken as a file verbatim — no directory dance). Per ADR 0003 all platforms —
+    Windows, macOS (Darwin), and Linux — deliberately share ``~/.config/toolbox/``;
+    macOS used to fall through to ``None`` here and crash on launch. ``system`` is
+    part of the contract so a future native-directory move has a seam to branch
+    on.
     """
     override = environ.get('TOOLBOX_CONFIG')
     if override:
@@ -49,7 +62,43 @@ def config_path(system: str, environ: Mapping[str, str]) -> str:
             path = os.path.join(path, "config.json")
         return path
 
+    if setting_config_path:
+        return os.path.expanduser(setting_config_path)
+
     return os.path.expanduser(os.path.join("~", ".config", "toolbox", "config.json"))
+
+
+def resolve_config_file(
+    system: str,
+    environ: Mapping[str, str],
+    setting_config_path: str | None,
+    isfile: Callable[[str], bool],
+) -> tuple[str, str | None]:
+    """Seam B (fallback): resolve the Config file to load, applying the
+    gone/invalid fallback for a saved ``config_path`` that is not there.
+
+    Returns ``(path, message)``. ``message`` is ``None`` on the happy path; when a
+    saved ``config_path`` points at a file that does not exist, it names the
+    missing path and the default it fell back to, so the caller can surface it
+    (the log pane) rather than crash. The setting is **never** mutated — a network
+    drive may be transiently absent, so we keep the saved value.
+
+    Only a setting-derived choice is validated: a ``TOOLBOX_CONFIG`` directory may
+    legitimately not exist yet (first launch seeds it), and the default Config is
+    seeded on first launch too — so neither is treated as a fallback case. The
+    ``isfile`` probe is injected to keep the decision pure and unit-testable.
+    """
+    chosen = config_path(system, environ, setting_config_path)
+
+    setting_was_used = bool(setting_config_path) and not environ.get('TOOLBOX_CONFIG')
+    if setting_was_used and not isfile(chosen):
+        default = config_path(system, environ, None)
+        return default, (
+            f"Saved config file not found: {chosen} — "
+            f"falling back to default config: {default}"
+        )
+
+    return chosen, None
 
 
 def launch_command(rez_command: str, rez_wants: list[str], command: str) -> str:
@@ -83,7 +132,18 @@ def shell_command(system: str, rez_command: str) -> tuple[str, list[str]]:
 
 
 def load_config() -> "ConfigDict":
-    config_file = config_path(platform.system(), os.environ)
+    # Resolve which Config to load from the saved setting, falling back to the
+    # default (and surfacing a message) if a saved config_path is gone/invalid —
+    # never crashing, never wiping the setting.
+    saved = settings.load_settings().get("config_path")
+    config_file, message = resolve_config_file(
+        platform.system(), os.environ, saved, os.path.isfile
+    )
+    if message:
+        # Ticket 01 has no log pane wired yet; print keeps parity with the
+        # existing "Default config created" notice. Ticket 05 routes reloads
+        # through the log pane.
+        print(message)
 
     if not os.path.isfile(config_file):
         config_dir = os.path.dirname(config_file)

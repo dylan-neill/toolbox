@@ -56,6 +56,25 @@ uv run toolbox
 
 If `TOOLBOX_CONFIG` points to a directory, Toolbox will look for `config.json` inside that directory.
 
+### Selecting the config file without an environment variable
+
+Toolbox also reads an app-level **settings** file at (`~` is `%USERPROFILE%` on Windows):
+
+```text
+~/.config/toolbox/settings.json
+```
+
+Set its `config_path` to select which config file to load — no `TOOLBOX_CONFIG` needed:
+
+```json
+{
+  "version": 1,
+  "config_path": "/abs/path/to/config.json"
+}
+```
+
+Resolution precedence is: the `TOOLBOX_CONFIG` environment variable (which **overrides** the saved `config_path`) → the `settings.json` `config_path` → the default `~/.config/toolbox/config.json`. If the saved `config_path` points at a file that no longer exists, Toolbox falls back to the default config, reports it, and leaves the setting in place (a network drive may be transiently absent). The settings file is optional — with none present, Toolbox behaves exactly as before — and is not created until a setting is saved.
+
 ### Config format
 
 Each config file contains `toolsets`. Each toolset contains a list of `tools` ie Rez environments with launchable applications. The bundled `src/toolbox/resources/example_config.json` file contains more example tool setups.
@@ -130,6 +149,7 @@ An installed Toolbox still depends on the workstation environment for Rez and th
 src/toolbox/__main__.py       Application entry point (uv run toolbox)
 src/toolbox/ui.py             PySide6 user interface and launch actions
 src/toolbox/data.py           Config parsing into Tool/ToolSet models (seam C)
+src/toolbox/settings.py       App-level settings store (settings.json; ADR 0006)
 src/toolbox/model.py          Tool and ToolSet dataclasses
 src/toolbox/util.py           Windows desktop-shortcut creation
 src/toolbox/globalvars.py     App name and version
