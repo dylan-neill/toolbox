@@ -6,6 +6,7 @@ from collections.abc import Callable, Mapping
 from typing import TYPE_CHECKING, cast
 
 from .. import settings
+from .. import terminals
 
 if TYPE_CHECKING:
     # Imported for typing only: importing data at runtime would form a cycle
@@ -114,21 +115,34 @@ def launch_command(rez_command: str, rez_wants: list[str], command: str) -> str:
     return f"{rez_command} {' '.join(rez_wants)} -- {command}"
 
 
-def shell_command(system: str, rez_command: str) -> tuple[str, list[str]]:
-    """Command that opens an interactive terminal inside ``rez_command``.
+def shell_command(
+    system: str,
+    rez_tokens: list[str],
+    terminal_id: str | None,
+    custom_command: "settings.TerminalCommandDict | None" = None,
+) -> tuple[str, list[str]]:
+    """Seam: command that opens the user's chosen terminal inside the rez env.
 
-    Returned as ``(program, arguments)`` rather than one string because QProcess
-    only splits on double quotes with no escaping, so the macOS AppleScript
-    (which embeds double quotes) cannot survive string tokenisation.
+    Pure. Takes the rez invocation as **tokens** (``["rez-env", "A", "B"]``, not a
+    pre-joined string) and the selected ``terminal_id`` (spec §3), and returns the
+    ``(program, arguments)`` that ``QProcess.start`` runs. A tuple rather than one
+    string because QProcess only splits on double quotes with no escaping, so the
+    macOS AppleScript (which embeds double quotes) cannot survive string
+    tokenisation.
+
+    ``terminal_id`` unset (``None``) reproduces today's per-OS default
+    byte-for-byte; a known id picks that terminal from the per-OS registry;
+    ``"custom"`` uses ``custom_command`` (a ``{program, args}`` object). An unknown
+    id — or ``"custom"`` with no stored command — falls back to the OS default
+    rather than crashing (there is no install detection: an uninstalled but known
+    pick fails at launch and logs like any bad command, per spec §3).
+
+    A thin wrapper over the ``terminals`` seam: ``resolve`` picks the
+    ``(program, args-template)`` pair, ``substitute`` fills its ``{command}`` /
+    ``{command_str}`` placeholder with the rez tokens.
     """
-    system = system.lower()
-    if system == 'windows':
-        return 'cmd.exe', ['/C', 'start', 'cmd.exe', '/K', *rez_command.split()]
-    if system == 'darwin':
-        script = f'tell application "Terminal" to do script "{rez_command}"'
-        return 'osascript', ['-e', script]
-    # Linux and anything else.
-    return 'gnome-terminal', ['--', *rez_command.split()]
+    program, args_template = terminals.resolve(system, terminal_id, custom_command)
+    return terminals.substitute(program, args_template, rez_tokens)
 
 
 def load_config() -> "ConfigDict":

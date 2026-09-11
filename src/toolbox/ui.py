@@ -11,6 +11,7 @@ from PySide6 import QtCore, QtGui, QtWidgets
 
 from . import globalvars
 from . import resources
+from . import settings
 from . import data
 from . import util
 from .model import Tool
@@ -451,8 +452,18 @@ class ToolboxWindow(QtWidgets.QMainWindow):
         process = QtCore.QProcess(self)
 
         if open_shell:
-            rez_env = f"{resources.rez_command()} {' '.join(tool.rez_wants)}"
-            program, arguments = resources.shell_command(platform.system(), rez_env)
+            # Pass the rez invocation as tokens (not a joined string): the seam
+            # splices them into the chosen terminal's args template per its
+            # placeholder. The terminal comes from the Settings store — unset
+            # reproduces today's per-OS default (ticket 02, spec §3).
+            rez_tokens = [resources.rez_command(), *tool.rez_wants]
+            stored = settings.load_settings()
+            program, arguments = resources.shell_command(
+                platform.system(),
+                rez_tokens,
+                stored.get("terminal_id"),
+                stored.get("terminal_command"),
+            )
             self.update_log(f'Command: {program} {" ".join(arguments)}')
             process.start(program, arguments)
         else:
