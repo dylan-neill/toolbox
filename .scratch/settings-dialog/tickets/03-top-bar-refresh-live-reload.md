@@ -12,15 +12,15 @@ See `../spec.md` §5 (entry points, reload action, selection preservation).
 
 **Blocked by:** 01 (reload re-resolves the config path via the store/resolution)
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] A top bar sits above the icon grid: Toolsets combo on the left, refresh and
+- [x] A top bar sits above the icon grid: Toolsets combo on the left, refresh and
   gear buttons right-aligned, with a bundled gear icon (`resources/icons`), Qt's
   reload pixmap for refresh, and "Reload config" / "Settings" tooltips.
-- [ ] Refresh calls a `reload_config()` that re-resolves and re-reads the Config
+- [x] Refresh calls a `reload_config()` that re-resolves and re-reads the Config
   and rebuilds the grid; an external edit is reflected without restarting.
-- [ ] A read/parse error during reload is caught, logged to the log pane, and
+- [x] A read/parse error during reload is caught, logged to the log pane, and
   leaves the currently-loaded toolsets displayed — the grid never blanks and the
   app never crashes.
-- [ ] The selected toolset is preserved by name across a reload; if it no longer
+- [x] The selected toolset is preserved by name across a reload; if it no longer
   exists, selection falls back to the first toolset.

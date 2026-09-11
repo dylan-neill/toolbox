@@ -18,6 +18,13 @@ def test_icon_asset_resolves() -> None:
     assert path.is_file()
 
 
+def test_settings_gear_icon_resolves() -> None:
+    # The top-bar gear button (ticket 03) loads this bundled icon by name; a
+    # packaging change that drops it should fail here, not at a blank button.
+    path = Path(resources.icon_path("settings_icon.png"))
+    assert path.is_file()
+
+
 def test_example_config_asset_resolves() -> None:
     data = json.loads(resources.example_config_text())
     assert "toolsets" in data

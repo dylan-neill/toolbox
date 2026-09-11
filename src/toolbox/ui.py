@@ -98,12 +98,41 @@ class ToolboxWindow(QtWidgets.QMainWindow):
 
         self.tools_layout = QtWidgets.QVBoxLayout()
 
-        self.toolsets_layout = QtWidgets.QFormLayout()
-        self.tools_layout.addLayout(self.toolsets_layout)
+        # Top bar above the icon grid: the Toolsets label+combo on the left, a
+        # stretch, then the refresh and gear buttons right-aligned (spec §5).
+        self.top_bar_layout = QtWidgets.QHBoxLayout()
+        self.tools_layout.addLayout(self.top_bar_layout)
+
+        self.toolsets_label = QtWidgets.QLabel("Toolsets")
+        self.top_bar_layout.addWidget(self.toolsets_label)
 
         self.toolsets_combo = QtWidgets.QComboBox(self)
         self.toolsets_combo.setFixedWidth(260)
-        self.toolsets_layout.addRow("Toolsets", self.toolsets_combo)
+        self.top_bar_layout.addWidget(self.toolsets_combo)
+
+        self.top_bar_layout.addStretch(1)
+
+        # Small fixed-size buttons matching the existing ~23px menu button.
+        # Refresh re-reads the current Config live (reload_config); the gear
+        # opens the Settings dialog. Qt's built-in reload pixmap for refresh,
+        # the bundled gear icon for Settings.
+        self.refresh_button = QtWidgets.QPushButton()
+        self.refresh_button.setFixedSize(23, 23)
+        self.refresh_button.setToolTip("Reload config")
+        self.refresh_button.setIcon(
+            self.style().standardIcon(QtWidgets.QStyle.StandardPixmap.SP_BrowserReload)
+        )
+        self.top_bar_layout.addWidget(self.refresh_button)
+
+        # Present here but inert: ticket 04 wires this to open the Settings
+        # dialog. Left unconnected deliberately until then.
+        self.settings_button = QtWidgets.QPushButton()
+        self.settings_button.setFixedSize(23, 23)
+        self.settings_button.setToolTip("Settings")
+        self.settings_button.setIcon(
+            QtGui.QIcon(resources.icon_path("settings_icon.png"))
+        )
+        self.top_bar_layout.addWidget(self.settings_button)
 
         self.tools_list = QtWidgets.QListWidget()
         self.tools_list.setFlow(QtWidgets.QListView.LeftToRight)
@@ -284,6 +313,7 @@ class ToolboxWindow(QtWidgets.QMainWindow):
         self.launch_button.clicked.connect(self.on_launch_clicked)
         self.shell_button.clicked.connect(self.on_open_shell_clicked)
         self.edit_button.clicked.connect(self.on_edit_clicked)
+        self.refresh_button.clicked.connect(self.reload_config)
 
 
     def set_defaults(self) -> None:
@@ -300,6 +330,51 @@ class ToolboxWindow(QtWidgets.QMainWindow):
 
         self.setGeometry(pos_x, pos_y, width, height)
         self.toolsets_combo.setCurrentIndex(0)
+
+
+    def reload_config(self) -> None:
+        """Re-resolve and re-read the Config, rebuilding the grid live.
+
+        Wired to the refresh button. Re-resolves the config path and re-parses
+        the file, so an externally edited Config is reflected without a restart.
+
+        Never crashes and never blanks the grid: a read or parse error is caught
+        and logged to the log pane while the currently-loaded toolsets stay on
+        screen. ``data.populate`` only swaps ``data.toolsets`` on a clean parse,
+        so a failure leaves the previous toolsets intact. The selected toolset is
+        preserved by name across the reload, falling back to the first when it no
+        longer exists.
+        """
+        previous = self.toolsets_combo.currentText()
+        try:
+            data.populate()
+        except Exception as exc:
+            # A resilience boundary around a user-editable file: the criterion is
+            # "never crashes". parse_config's documented failure is KeyError on a
+            # bad shape, but a hand-edited Config can fail in other ways too — a
+            # corrupt file (json.JSONDecodeError / ValueError), an unreadable one
+            # (OSError), or a wrong-typed shape (TypeError, e.g. a toolset that is
+            # a string). Catch broadly, keep the current toolsets on screen, and
+            # surface why rather than blank the grid.
+            self.update_log(f"Config reload failed, keeping current toolsets: {exc}")
+            return
+        self.update_toolset_list()
+        self.restore_toolset_selection(previous)
+        # Rebuild the grid explicitly (spec §5) rather than leaning only on the
+        # combo's currentIndexChanged side-effect — so a future guard that blocks
+        # that signal during repopulation (ticket 05) cannot silently stop it.
+        self.update_tools()
+
+
+    def restore_toolset_selection(self, name: str) -> None:
+        """Reselect the toolset named ``name``, falling back to the first.
+
+        Used after a reload rebuilds the combo: a toolset that survived the edit
+        is reselected by name (its index may have moved); one that is gone leaves
+        the selection on index 0.
+        """
+        index = self.toolsets_combo.findText(name)
+        self.toolsets_combo.setCurrentIndex(index if index >= 0 else 0)
 
 
     def update_toolset_list(self, project_list: list[str] | None = None) -> None:
