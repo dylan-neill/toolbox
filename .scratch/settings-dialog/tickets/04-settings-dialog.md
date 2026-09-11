@@ -14,14 +14,14 @@ See `../spec.md` §4 (dialog layout).
 **Blocked by:** 02 (terminal registry for the dropdown + save), 03 (gear button +
 `reload_config()`)
 
-**Status:** ready-for-agent
+**Status:** done
 
-- [ ] The gear opens a modal "Settings" dialog with a Config-file row (current
+- [x] The gear opens a modal "Settings" dialog with a Config-file row (current
   path, Browse for an existing `.json`, Clear to default) and an Open Shell
   terminal row (predefined dropdown + Custom program/arguments fields).
-- [ ] When `TOOLBOX_CONFIG` is set, the dialog shows a note that the environment
+- [x] When `TOOLBOX_CONFIG` is set, the dialog shows a note that the environment
   variable is overriding the config selection.
-- [ ] OK writes `config_path`, `terminal_id`, and `terminal_command` via
+- [x] OK writes `config_path`, `terminal_id`, and `terminal_command` via
   load-modify-write; if `config_path` changed, `reload_config()` runs so the grid
   updates immediately. Cancel writes nothing.
-- [ ] The README Configuration section documents the Settings dialog.
+- [x] The README Configuration section documents the Settings dialog.

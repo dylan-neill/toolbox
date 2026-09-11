@@ -75,6 +75,15 @@ Set its `config_path` to select which config file to load — no `TOOLBOX_CONFIG
 
 Resolution precedence is: the `TOOLBOX_CONFIG` environment variable (which **overrides** the saved `config_path`) → the `settings.json` `config_path` → the default `~/.config/toolbox/config.json`. If the saved `config_path` points at a file that no longer exists, Toolbox falls back to the default config, reports it, and leaves the setting in place (a network drive may be transiently absent). The settings file is optional — with none present, Toolbox behaves exactly as before — and is not created until a setting is saved.
 
+### The Settings dialog
+
+You don't have to edit `settings.json` by hand. The **gear** button in the top bar (beside the refresh button) opens a **Settings** dialog:
+
+- **Config file** — shows the currently selected config path. **Browse…** picks an existing `.json` file; **Clear** reverts to the default `~/.config/toolbox/config.json`. If `TOOLBOX_CONFIG` is set, a note reminds you that the environment variable is currently overriding this selection (it still takes precedence over whatever you pick here).
+- **Open Shell terminal** — the terminal that *Open Shell* launches, chosen from your OS's terminals (e.g. Terminal, iTerm2, Ghostty on macOS) or **Custom…**. Custom reveals a **Program** field and a whitespace-separated **Arguments** field, where `{command}` marks where the `rez-env …` invocation is spliced in.
+
+Clicking **OK** saves your choices; if you changed the config file, the icon grid reloads immediately. **Cancel** discards them. The refresh button beside the gear re-reads the current config file, picking up any external edits.
+
 ### Config format
 
 Each config file contains `toolsets`. Each toolset contains a list of `tools` ie Rez environments with launchable applications. The bundled `src/toolbox/resources/example_config.json` file contains more example tool setups.
