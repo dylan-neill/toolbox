@@ -42,7 +42,8 @@ packages = ["src/toolbox"]
 testpaths = ["tests"]
 
 # --- Type checking (ADR 0005) ------------------------------------------------
-# Strict by default: the logic seams (model.py, data.py, resources/) carry the
+# Strict by default: the logic seams (model.py, data.py, settings.py,
+# terminals.py, resources/) carry the
 # real domain and are held to it. The Qt/OS boundary (ui.py, globalvars.py, and
 # the Windows-only paths) relaxes the stub-driven rules via per-file `# pyright:`
 # headers, not a global lowering — so the exemption stays scoped and visible.
