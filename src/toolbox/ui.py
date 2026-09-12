@@ -693,20 +693,20 @@ class SettingsDialog(QtWidgets.QDialog):
 
 
     def refresh_config_field(self) -> None:
-        """Show the selected path, or the default location when unset.
+        """Show the selected path, or an empty field hinting the default when unset.
 
-        The field mirrors the *setting*: a saved ``config_path``, or (when unset)
-        the default ``~/.config/toolbox/config.json`` so the user sees what is in
-        effect rather than an empty box. An empty ``environ`` is passed so the
-        default shown is the true default, independent of any ``TOOLBOX_CONFIG``
-        override (which the note explains separately).
+        A selected ``config_path`` shows as the field's text. When unset — the
+        default, or after **Clear** — the field is left empty with the default
+        location as greyed placeholder text. Two reasons: the user can tell "using
+        the default" apart from an explicit pick (a real path shown as plain text
+        would look identical to a selection), and Clear now visibly empties the
+        field rather than swapping in another path-looking string. An empty
+        ``environ`` is passed so the default shown is the true default,
+        independent of any ``TOOLBOX_CONFIG`` override (which the note explains).
         """
-        if self._config_path:
-            self.config_path_field.setText(self._config_path)
-        else:
-            self.config_path_field.setText(
-                resources.config_path(self._system, {}, None)
-            )
+        default = resources.config_path(self._system, {}, None)
+        self.config_path_field.setPlaceholderText(f"Default: {default}")
+        self.config_path_field.setText(self._config_path or "")
 
 
     def update_custom_visibility(self) -> None:

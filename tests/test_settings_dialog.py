@@ -116,9 +116,10 @@ def test_config_field_shows_default_when_unset(
     _stub_store(monkeypatch, {})
     dialog = _dialog(qtbot)
 
-    # Unset → the default config location (not blank), so the user sees what is
-    # in effect. It ends in the default filename.
-    assert dialog.config_path_field.text().endswith("config.json")
+    # Unset → the field is empty with the default location as greyed placeholder,
+    # so "using the default" is visibly distinct from an explicit pick.
+    assert dialog.config_path_field.text() == ""
+    assert dialog.config_path_field.placeholderText().endswith("config.json")
 
 
 def test_override_note_visible_only_when_env_set(
@@ -171,10 +172,14 @@ def test_clear_reverts_to_default(
 ) -> None:
     _stub_store(monkeypatch, {"config_path": "/abs/custom.json"})
     dialog = _dialog(qtbot)
+    assert dialog.config_path_field.text() == "/abs/custom.json"
+
     dialog.on_clear()
 
-    assert dialog.config_path_field.text().endswith("config.json")
-    assert dialog.config_path_field.text() != "/abs/custom.json"
+    # Clear visibly empties the field and reverts to the default (shown as the
+    # placeholder hint), and a following save drops the config_path key.
+    assert dialog.config_path_field.text() == ""
+    assert dialog.config_path_field.placeholderText().endswith("config.json")
 
 
 def test_custom_fields_hidden_unless_custom_selected(
