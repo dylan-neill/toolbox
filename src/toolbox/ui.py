@@ -286,8 +286,12 @@ class ToolboxWindow(QtWidgets.QMainWindow):
 
         self.process_list: list[QtCore.QProcess] = []
 
-        self.set_defaults()
+        # Populate the combo before set_defaults so the launch restore can
+        # reselect the saved last_toolset by name (spec §5). update_tools is
+        # called explicitly, not left to the combo's currentIndexChanged: that
+        # signal stays blocked through every programmatic repopulation below.
         self.update_toolset_list()
+        self.set_defaults()
         self.update_tools()
 
 
@@ -311,7 +315,7 @@ class ToolboxWindow(QtWidgets.QMainWindow):
         """
         self.tools_list.itemClicked.connect(self.on_item_clicked)
         self.tools_list.itemDoubleClicked.connect(self.on_item_double_clicked)
-        self.toolsets_combo.currentIndexChanged.connect(self.update_tools)
+        self.toolsets_combo.currentIndexChanged.connect(self.on_toolset_changed)
         self.launch_button.clicked.connect(self.on_launch_clicked)
         self.shell_button.clicked.connect(self.on_open_shell_clicked)
         self.edit_button.clicked.connect(self.on_edit_clicked)
@@ -320,19 +324,40 @@ class ToolboxWindow(QtWidgets.QMainWindow):
 
 
     def set_defaults(self) -> None:
+        """Restore saved window geometry and last toolset, else the built-in defaults.
+
+        Replaces the previously hardcoded geometry and ``setCurrentIndex(0)``
+        (spec §5): on launch the saved ``window_geometry`` and ``last_toolset``
+        are restored from the Settings store, each falling back to the built-in
+        default — the centered 845×460 size, and the first toolset — when absent
+        (or, for geometry, unusable). Restoring the toolset is a programmatic
+        change, so it goes through the signal-blocking ``restore_toolset_selection``
+        and does not count as a user change that would persist a spurious
+        ``last_toolset``.
         """
-        Sets control defaults whether from prefs on disk or hardcoded defaults
-        :return:
-        """
+        stored = settings.load_settings()
+
+        geometry = stored.get("window_geometry")
+        # restoreGeometry returns False for empty/corrupt data; fall back to the
+        # centered default in that case as well as when nothing was saved, so the
+        # window never opens with an unset (0×0 / off-screen) geometry.
+        restored = bool(geometry) and self.restoreGeometry(
+            QtCore.QByteArray.fromBase64(geometry.encode("ascii"))
+        )
+        if not restored:
+            self.center_with_default_size()
+
+        self.restore_toolset_selection(stored.get("last_toolset") or "")
+
+    def center_with_default_size(self) -> None:
+        """Size the window to the default 845×460 and center it on the screen."""
         width = 845
         height = 460
         screen_rect = QtWidgets.QApplication.primaryScreen().geometry()
         # Integer division: setGeometry takes ints, and screen dimensions are ints.
         pos_x = (screen_rect.width() - width) // 2
         pos_y = (screen_rect.height() - height) // 2
-
         self.setGeometry(pos_x, pos_y, width, height)
-        self.toolsets_combo.setCurrentIndex(0)
 
 
     def reload_config(self) -> None:
@@ -385,12 +410,22 @@ class ToolboxWindow(QtWidgets.QMainWindow):
     def restore_toolset_selection(self, name: str) -> None:
         """Reselect the toolset named ``name``, falling back to the first.
 
-        Used after a reload rebuilds the combo: a toolset that survived the edit
-        is reselected by name (its index may have moved); one that is gone leaves
-        the selection on index 0.
+        Used on launch to restore the saved ``last_toolset`` and after a reload
+        rebuilds the combo: a toolset that survived (or a launch-restored name
+        that still exists) is reselected by name, its index having possibly
+        moved; one that is gone or empty leaves the selection on index 0.
+
+        The reselection is a programmatic change, so the combo's signals are
+        blocked while it happens — otherwise it would fire ``on_toolset_changed``
+        and persist a spurious ``last_toolset`` (spec §5). Callers rebuild the
+        grid via an explicit ``update_tools``.
         """
         index = self.toolsets_combo.findText(name)
-        self.toolsets_combo.setCurrentIndex(index if index >= 0 else 0)
+        self.toolsets_combo.blockSignals(True)
+        try:
+            self.toolsets_combo.setCurrentIndex(index if index >= 0 else 0)
+        finally:
+            self.toolsets_combo.blockSignals(False)
 
 
     def update_toolset_list(self, project_list: list[str] | None = None) -> None:
@@ -400,14 +435,22 @@ class ToolboxWindow(QtWidgets.QMainWindow):
         :return:
         """
 
-        self.toolsets_combo.clear()
+        # Block the combo's signals across the clear/addItems churn: each fires
+        # currentIndexChanged, which would rebuild the grid mid-repopulate and
+        # (spec §5) persist a spurious last_toolset off the transient selection.
+        # Callers that need the grid rebuilt call update_tools explicitly.
+        self.toolsets_combo.blockSignals(True)
+        try:
+            self.toolsets_combo.clear()
 
-        items: list[str] = []
-        for toolset in data.toolsets:
-            items.append(toolset.name)
-        if project_list is not None:
-            items.extend(project_list)
-        self.toolsets_combo.addItems(items)
+            items: list[str] = []
+            for toolset in data.toolsets:
+                items.append(toolset.name)
+            if project_list is not None:
+                items.extend(project_list)
+            self.toolsets_combo.addItems(items)
+        finally:
+            self.toolsets_combo.blockSignals(False)
 
 
     def update_tools(self) -> None:
@@ -422,6 +465,44 @@ class ToolboxWindow(QtWidgets.QMainWindow):
                 list_item.setSizeHint(QtCore.QSize(128,160))
                 self.tools_list.addItem(list_item)
                 self.tools_list.setItemWidget(list_item, list_item.widget)
+
+
+    def on_toolset_changed(self) -> None:
+        """Handle a genuine user toolset change: rebuild the grid, then persist it.
+
+        Wired to the combo's ``currentIndexChanged``. Programmatic repopulation
+        (launch restore, live reload) blocks that signal, so this only runs for a
+        user's own selection — exactly when ``last_toolset`` should be written
+        (spec §5). The grid rebuild stays here so a plain user pick still updates
+        the tools even though the signal is blocked during repopulation.
+        """
+        self.update_tools()
+        self.save_last_toolset()
+
+
+    def save_last_toolset(self) -> None:
+        """Persist the current toolset as ``last_toolset`` (load-modify-write).
+
+        Re-reads the store immediately before writing so a partial update never
+        clobbers ``config_path`` / ``terminal`` or the saved ``window_geometry``.
+        """
+        stored = settings.load_settings()
+        stored["last_toolset"] = self.toolsets_combo.currentText()
+        settings.save_settings(stored)
+
+
+    def closeEvent(self, event: QtGui.QCloseEvent) -> None:
+        """Save the window geometry on close (spec §5), then close as usual.
+
+        base64 of ``saveGeometry()`` via load-modify-write, so persisting the
+        geometry never clobbers ``config_path`` / ``terminal`` / ``last_toolset``.
+        """
+        stored = settings.load_settings()
+        stored["window_geometry"] = (
+            self.saveGeometry().toBase64().data().decode("ascii")
+        )
+        settings.save_settings(stored)
+        super().closeEvent(event)
 
 
     '''
