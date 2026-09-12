@@ -25,6 +25,14 @@ def test_settings_gear_icon_resolves() -> None:
     assert path.is_file()
 
 
+def test_reload_icon_resolves() -> None:
+    # The top-bar refresh button loads this bundled icon by name (replacing Qt's
+    # platform-themed SP_BrowserReload so it matches the white gear); a packaging
+    # change that drops it should fail here, not at a blank button.
+    path = Path(resources.icon_path("reload_icon.png"))
+    assert path.is_file()
+
+
 def test_example_config_asset_resolves() -> None:
     data = json.loads(resources.example_config_text())
     assert "toolsets" in data

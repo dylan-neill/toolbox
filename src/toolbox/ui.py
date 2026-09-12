@@ -117,13 +117,15 @@ class ToolboxWindow(QtWidgets.QMainWindow):
 
         # Small fixed-size buttons matching the existing ~23px menu button.
         # Refresh re-reads the current Config live (reload_config); the gear
-        # opens the Settings dialog. Qt's built-in reload pixmap for refresh,
-        # the bundled gear icon for Settings.
+        # opens the Settings dialog. Both use bundled Material-icon glyphs (the
+        # reload and the gear), so they share one plain near-white style — Qt's
+        # built-in SP_BrowserReload pixmap is platform-themed (a blue arrow on
+        # macOS) and clashed with the white gear beside it.
         self.refresh_button = QtWidgets.QPushButton()
         self.refresh_button.setFixedSize(23, 23)
         self.refresh_button.setToolTip("Reload config")
         self.refresh_button.setIcon(
-            self.style().standardIcon(QtWidgets.QStyle.StandardPixmap.SP_BrowserReload)
+            QtGui.QIcon(resources.icon_path("reload_icon.png"))
         )
         self.top_bar_layout.addWidget(self.refresh_button)
 
