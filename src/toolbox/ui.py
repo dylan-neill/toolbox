@@ -620,6 +620,14 @@ class SettingsDialog(QtWidgets.QDialog):
         self.config_path_field = QtWidgets.QLineEdit()
         self.config_path_field.setReadOnly(True)
         self.config_path_field.setMinimumWidth(320)
+        # The default-path hint is placeholder text; Qt's default PlaceholderText
+        # role is a dim ~50%-alpha grey that is unreadable on the dark theme's
+        # Base, so brighten it to a legible light grey on this field.
+        field_palette = self.config_path_field.palette()
+        field_palette.setColor(
+            QtGui.QPalette.ColorRole.PlaceholderText, QtGui.QColor(200, 200, 200)
+        )
+        self.config_path_field.setPalette(field_palette)
         config_row.addWidget(self.config_path_field)
         self.browse_button = QtWidgets.QPushButton("Browse…")
         config_row.addWidget(self.browse_button)
