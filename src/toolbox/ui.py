@@ -6,11 +6,15 @@
 # suppressed.
 # pyright: reportUnknownMemberType=false, reportUnknownArgumentType=false, reportUnknownVariableType=false, reportAttributeAccessIssue=false, reportOptionalMemberAccess=false
 
+import os
 import platform
+from collections.abc import Mapping
 from PySide6 import QtCore, QtGui, QtWidgets
 
 from . import globalvars
 from . import resources
+from . import settings
+from . import terminals
 from . import data
 from . import util
 from .model import Tool
@@ -97,12 +101,40 @@ class ToolboxWindow(QtWidgets.QMainWindow):
 
         self.tools_layout = QtWidgets.QVBoxLayout()
 
-        self.toolsets_layout = QtWidgets.QFormLayout()
-        self.tools_layout.addLayout(self.toolsets_layout)
+        # Top bar above the icon grid: the Toolsets label+combo on the left, a
+        # stretch, then the refresh and gear buttons right-aligned (spec §5).
+        self.top_bar_layout = QtWidgets.QHBoxLayout()
+        self.tools_layout.addLayout(self.top_bar_layout)
+
+        self.toolsets_label = QtWidgets.QLabel("Toolsets")
+        self.top_bar_layout.addWidget(self.toolsets_label)
 
         self.toolsets_combo = QtWidgets.QComboBox(self)
         self.toolsets_combo.setFixedWidth(260)
-        self.toolsets_layout.addRow("Toolsets", self.toolsets_combo)
+        self.top_bar_layout.addWidget(self.toolsets_combo)
+
+        self.top_bar_layout.addStretch(1)
+
+        # Small fixed-size buttons matching the existing ~23px menu button.
+        # Refresh re-reads the current Config live (reload_config); the gear
+        # opens the Settings dialog. Qt's built-in reload pixmap for refresh,
+        # the bundled gear icon for Settings.
+        self.refresh_button = QtWidgets.QPushButton()
+        self.refresh_button.setFixedSize(23, 23)
+        self.refresh_button.setToolTip("Reload config")
+        self.refresh_button.setIcon(
+            self.style().standardIcon(QtWidgets.QStyle.StandardPixmap.SP_BrowserReload)
+        )
+        self.top_bar_layout.addWidget(self.refresh_button)
+
+        # Opens the modal Settings dialog (wired in setup_interaction).
+        self.settings_button = QtWidgets.QPushButton()
+        self.settings_button.setFixedSize(23, 23)
+        self.settings_button.setToolTip("Settings")
+        self.settings_button.setIcon(
+            QtGui.QIcon(resources.icon_path("settings_icon.png"))
+        )
+        self.top_bar_layout.addWidget(self.settings_button)
 
         self.tools_list = QtWidgets.QListWidget()
         self.tools_list.setFlow(QtWidgets.QListView.LeftToRight)
@@ -254,8 +286,12 @@ class ToolboxWindow(QtWidgets.QMainWindow):
 
         self.process_list: list[QtCore.QProcess] = []
 
-        self.set_defaults()
+        # Populate the combo before set_defaults so the launch restore can
+        # reselect the saved last_toolset by name (spec §5). update_tools is
+        # called explicitly, not left to the combo's currentIndexChanged: that
+        # signal stays blocked through every programmatic repopulation below.
         self.update_toolset_list()
+        self.set_defaults()
         self.update_tools()
 
 
@@ -279,26 +315,117 @@ class ToolboxWindow(QtWidgets.QMainWindow):
         """
         self.tools_list.itemClicked.connect(self.on_item_clicked)
         self.tools_list.itemDoubleClicked.connect(self.on_item_double_clicked)
-        self.toolsets_combo.currentIndexChanged.connect(self.update_tools)
+        self.toolsets_combo.currentIndexChanged.connect(self.on_toolset_changed)
         self.launch_button.clicked.connect(self.on_launch_clicked)
         self.shell_button.clicked.connect(self.on_open_shell_clicked)
         self.edit_button.clicked.connect(self.on_edit_clicked)
+        self.refresh_button.clicked.connect(self.reload_config)
+        self.settings_button.clicked.connect(self.on_settings_clicked)
 
 
     def set_defaults(self) -> None:
+        """Restore saved window geometry and last toolset, else the built-in defaults.
+
+        Replaces the previously hardcoded geometry and ``setCurrentIndex(0)``
+        (spec §5): on launch the saved ``window_geometry`` and ``last_toolset``
+        are restored from the Settings store, each falling back to the built-in
+        default — the centered 845×460 size, and the first toolset — when absent
+        (or, for geometry, unusable). Restoring the toolset is a programmatic
+        change, so it goes through the signal-blocking ``restore_toolset_selection``
+        and does not count as a user change that would persist a spurious
+        ``last_toolset``.
         """
-        Sets control defaults whether from prefs on disk or hardcoded defaults
-        :return:
-        """
+        stored = settings.load_settings()
+
+        geometry = stored.get("window_geometry")
+        # restoreGeometry returns False for empty/corrupt data; fall back to the
+        # centered default in that case as well as when nothing was saved, so the
+        # window never opens with an unset (0×0 / off-screen) geometry.
+        restored = bool(geometry) and self.restoreGeometry(
+            QtCore.QByteArray.fromBase64(geometry.encode("ascii"))
+        )
+        if not restored:
+            self.center_with_default_size()
+
+        self.restore_toolset_selection(stored.get("last_toolset") or "")
+
+    def center_with_default_size(self) -> None:
+        """Size the window to the default 845×460 and center it on the screen."""
         width = 845
         height = 460
         screen_rect = QtWidgets.QApplication.primaryScreen().geometry()
         # Integer division: setGeometry takes ints, and screen dimensions are ints.
         pos_x = (screen_rect.width() - width) // 2
         pos_y = (screen_rect.height() - height) // 2
-
         self.setGeometry(pos_x, pos_y, width, height)
-        self.toolsets_combo.setCurrentIndex(0)
+
+
+    def reload_config(self) -> None:
+        """Re-resolve and re-read the Config, rebuilding the grid live.
+
+        Wired to the refresh button. Re-resolves the config path and re-parses
+        the file, so an externally edited Config is reflected without a restart.
+
+        Never crashes and never blanks the grid: a read or parse error is caught
+        and logged to the log pane while the currently-loaded toolsets stay on
+        screen. ``data.populate`` only swaps ``data.toolsets`` on a clean parse,
+        so a failure leaves the previous toolsets intact. The selected toolset is
+        preserved by name across the reload, falling back to the first when it no
+        longer exists.
+        """
+        previous = self.toolsets_combo.currentText()
+        try:
+            data.populate()
+        except Exception as exc:
+            # A resilience boundary around a user-editable file: the criterion is
+            # "never crashes". parse_config's documented failure is KeyError on a
+            # bad shape, but a hand-edited Config can fail in other ways too — a
+            # corrupt file (json.JSONDecodeError / ValueError), an unreadable one
+            # (OSError), or a wrong-typed shape (TypeError, e.g. a toolset that is
+            # a string). Catch broadly, keep the current toolsets on screen, and
+            # surface why rather than blank the grid.
+            self.update_log(f"Config reload failed, keeping current toolsets: {exc}")
+            return
+        self.update_toolset_list()
+        self.restore_toolset_selection(previous)
+        # Rebuild the grid explicitly (spec §5) rather than leaning only on the
+        # combo's currentIndexChanged side-effect — so a future guard that blocks
+        # that signal during repopulation (ticket 05) cannot silently stop it.
+        self.update_tools()
+
+
+    def on_settings_clicked(self) -> None:
+        """Open the modal Settings dialog; live-reload if the Config changed.
+
+        The dialog owns its own load-modify-write on OK (spec §4); the window's
+        only job afterwards is to re-read the Config when the saved
+        ``config_path`` changed, so the grid updates immediately without a
+        restart. Cancel writes nothing and leaves the grid untouched.
+        """
+        dialog = SettingsDialog(self)
+        if dialog.exec() and dialog.config_path_changed:
+            self.reload_config()
+
+
+    def restore_toolset_selection(self, name: str) -> None:
+        """Reselect the toolset named ``name``, falling back to the first.
+
+        Used on launch to restore the saved ``last_toolset`` and after a reload
+        rebuilds the combo: a toolset that survived (or a launch-restored name
+        that still exists) is reselected by name, its index having possibly
+        moved; one that is gone or empty leaves the selection on index 0.
+
+        The reselection is a programmatic change, so the combo's signals are
+        blocked while it happens — otherwise it would fire ``on_toolset_changed``
+        and persist a spurious ``last_toolset`` (spec §5). Callers rebuild the
+        grid via an explicit ``update_tools``.
+        """
+        index = self.toolsets_combo.findText(name)
+        self.toolsets_combo.blockSignals(True)
+        try:
+            self.toolsets_combo.setCurrentIndex(index if index >= 0 else 0)
+        finally:
+            self.toolsets_combo.blockSignals(False)
 
 
     def update_toolset_list(self, project_list: list[str] | None = None) -> None:
@@ -308,14 +435,22 @@ class ToolboxWindow(QtWidgets.QMainWindow):
         :return:
         """
 
-        self.toolsets_combo.clear()
+        # Block the combo's signals across the clear/addItems churn: each fires
+        # currentIndexChanged, which would rebuild the grid mid-repopulate and
+        # (spec §5) persist a spurious last_toolset off the transient selection.
+        # Callers that need the grid rebuilt call update_tools explicitly.
+        self.toolsets_combo.blockSignals(True)
+        try:
+            self.toolsets_combo.clear()
 
-        items: list[str] = []
-        for toolset in data.toolsets:
-            items.append(toolset.name)
-        if project_list is not None:
-            items.extend(project_list)
-        self.toolsets_combo.addItems(items)
+            items: list[str] = []
+            for toolset in data.toolsets:
+                items.append(toolset.name)
+            if project_list is not None:
+                items.extend(project_list)
+            self.toolsets_combo.addItems(items)
+        finally:
+            self.toolsets_combo.blockSignals(False)
 
 
     def update_tools(self) -> None:
@@ -330,6 +465,44 @@ class ToolboxWindow(QtWidgets.QMainWindow):
                 list_item.setSizeHint(QtCore.QSize(128,160))
                 self.tools_list.addItem(list_item)
                 self.tools_list.setItemWidget(list_item, list_item.widget)
+
+
+    def on_toolset_changed(self) -> None:
+        """Handle a genuine user toolset change: rebuild the grid, then persist it.
+
+        Wired to the combo's ``currentIndexChanged``. Programmatic repopulation
+        (launch restore, live reload) blocks that signal, so this only runs for a
+        user's own selection — exactly when ``last_toolset`` should be written
+        (spec §5). The grid rebuild stays here so a plain user pick still updates
+        the tools even though the signal is blocked during repopulation.
+        """
+        self.update_tools()
+        self.save_last_toolset()
+
+
+    def save_last_toolset(self) -> None:
+        """Persist the current toolset as ``last_toolset`` (load-modify-write).
+
+        Re-reads the store immediately before writing so a partial update never
+        clobbers ``config_path`` / ``terminal`` or the saved ``window_geometry``.
+        """
+        stored = settings.load_settings()
+        stored["last_toolset"] = self.toolsets_combo.currentText()
+        settings.save_settings(stored)
+
+
+    def closeEvent(self, event: QtGui.QCloseEvent) -> None:
+        """Save the window geometry on close (spec §5), then close as usual.
+
+        base64 of ``saveGeometry()`` via load-modify-write, so persisting the
+        geometry never clobbers ``config_path`` / ``terminal`` / ``last_toolset``.
+        """
+        stored = settings.load_settings()
+        stored["window_geometry"] = (
+            self.saveGeometry().toBase64().data().decode("ascii")
+        )
+        settings.save_settings(stored)
+        super().closeEvent(event)
 
 
     '''
@@ -451,8 +624,18 @@ class ToolboxWindow(QtWidgets.QMainWindow):
         process = QtCore.QProcess(self)
 
         if open_shell:
-            rez_env = f"{resources.rez_command()} {' '.join(tool.rez_wants)}"
-            program, arguments = resources.shell_command(platform.system(), rez_env)
+            # Pass the rez invocation as tokens (not a joined string): the seam
+            # splices them into the chosen terminal's args template per its
+            # placeholder. The terminal comes from the Settings store — unset
+            # reproduces today's per-OS default (ticket 02, spec §3).
+            rez_tokens = [resources.rez_command(), *tool.rez_wants]
+            stored = settings.load_settings()
+            program, arguments = resources.shell_command(
+                platform.system(),
+                rez_tokens,
+                stored.get("terminal_id"),
+                stored.get("terminal_command"),
+            )
             self.update_log(f'Command: {program} {" ".join(arguments)}')
             process.start(program, arguments)
         else:
@@ -461,3 +644,224 @@ class ToolboxWindow(QtWidgets.QMainWindow):
             )
             self.update_log(f'Command: {command}')
             process.startCommand(command)
+
+
+class SettingsDialog(QtWidgets.QDialog):
+    """The modal **Settings** dialog (spec §4) — the UI face of the two settings
+    wired in tickets 01 and 02.
+
+    Two rows plus OK/Cancel: a **Config file** row (the current selected path, a
+    **Browse…** for an existing ``.json``, a **Clear** that reverts to the
+    default, and an inline note when ``TOOLBOX_CONFIG`` is overriding the
+    setting), and an **Open Shell terminal** row (the OS's predefined terminals
+    from the ``terminals`` registry + Custom, whose selection reveals program /
+    arguments fields).
+
+    The pure logic lives in the ``settings`` and ``terminals`` seams (tickets
+    01/02); this dialog is the Qt glue that reads the store to seed its widgets
+    and, on OK, does the **load-modify-write** back. ``system`` and ``environ``
+    are injectable so the terminal registry and the override note are testable
+    off the host OS; they default to the live platform and process environment.
+    """
+
+    def __init__(
+        self,
+        parent: QtWidgets.QWidget | None = None,
+        *,
+        system: str | None = None,
+        environ: Mapping[str, str] | None = None,
+    ) -> None:
+        super().__init__(parent)
+        self._system = system if system is not None else platform.system()
+        self._environ = environ if environ is not None else os.environ
+
+        stored = settings.load_settings()
+        # ``config_path`` as the setting sees it: a path string, or None for the
+        # default. Captured at open so ``config_path_changed`` can tell the caller
+        # whether a live reload is needed on OK.
+        self._initial_config_path = stored.get("config_path")
+        self._config_path: str | None = self._initial_config_path
+        # Set by ``save`` (on OK) so ``on_settings_clicked`` knows to reload.
+        self.config_path_changed = False
+
+        self.setup_ui()
+        self.load_from_settings(stored)
+
+
+    def setup_ui(self) -> None:
+        self.setWindowTitle("Settings")
+        self.setModal(True)
+
+        layout = QtWidgets.QVBoxLayout(self)
+        self.form = QtWidgets.QFormLayout()
+        layout.addLayout(self.form)
+
+        # Config-file row: read-only path + Browse… + Clear.
+        config_row = QtWidgets.QHBoxLayout()
+        self.config_path_field = QtWidgets.QLineEdit()
+        self.config_path_field.setReadOnly(True)
+        self.config_path_field.setMinimumWidth(320)
+        config_row.addWidget(self.config_path_field)
+        self.browse_button = QtWidgets.QPushButton("Browse…")
+        config_row.addWidget(self.browse_button)
+        self.clear_button = QtWidgets.QPushButton("Clear")
+        config_row.addWidget(self.clear_button)
+        self.form.addRow("Config file", config_row)
+
+        # Inline note shown only while TOOLBOX_CONFIG is overriding the setting.
+        self.override_note = QtWidgets.QLabel(
+            "TOOLBOX_CONFIG is set and is currently overriding this selection."
+        )
+        self.override_note.setWordWrap(True)
+        self.form.addRow(self.override_note)
+
+        # Open Shell terminal row: the OS's terminals + Custom.
+        self.terminal_combo = QtWidgets.QComboBox()
+        self.form.addRow("Open Shell terminal", self.terminal_combo)
+
+        # Custom program / arguments, revealed only when Custom is selected.
+        self.custom_program_field = QtWidgets.QLineEdit()
+        self.form.addRow("Program", self.custom_program_field)
+        self.custom_args_field = QtWidgets.QLineEdit()
+        self.custom_args_field.setPlaceholderText("-e {command}")
+        self.form.addRow("Arguments", self.custom_args_field)
+
+        self.button_box = QtWidgets.QDialogButtonBox(
+            QtWidgets.QDialogButtonBox.StandardButton.Ok
+            | QtWidgets.QDialogButtonBox.StandardButton.Cancel
+        )
+        layout.addWidget(self.button_box)
+
+        self.browse_button.clicked.connect(self.on_browse)
+        self.clear_button.clicked.connect(self.on_clear)
+        self.terminal_combo.currentIndexChanged.connect(
+            self.update_custom_visibility
+        )
+        self.button_box.accepted.connect(self.accept)
+        self.button_box.rejected.connect(self.reject)
+
+
+    def load_from_settings(self, stored: settings.SettingsDict) -> None:
+        """Seed the widgets from the store (spec §4)."""
+        self.refresh_config_field()
+        self.override_note.setVisible(bool(self._environ.get("TOOLBOX_CONFIG")))
+
+        # The OS's predefined terminals in registry order, then Custom.
+        for terminal_id, terminal in terminals.registry_for(self._system).items():
+            self.terminal_combo.addItem(terminal.label, terminal_id)
+        self.terminal_combo.addItem("Custom…", terminals.CUSTOM_TERMINAL_ID)
+
+        # An unset terminal shows the OS default (today's behaviour); a stored id
+        # selects that terminal. An unknown/stale stored id (e.g. a terminal from
+        # another OS in a shared store) also falls back to the OS default rather
+        # than leaning on index 0 — decoupled from the registry's ordering.
+        terminal_id = stored.get("terminal_id") or terminals.default_terminal_id(
+            self._system
+        )
+        index = self.terminal_combo.findData(terminal_id)
+        if index < 0:
+            index = self.terminal_combo.findData(
+                terminals.default_terminal_id(self._system)
+            )
+        self.terminal_combo.setCurrentIndex(index)
+
+        custom = stored.get("terminal_command")
+        if custom:
+            self.custom_program_field.setText(custom.get("program", ""))
+            self.custom_args_field.setText(" ".join(custom.get("args", [])))
+
+        self.update_custom_visibility()
+
+
+    def refresh_config_field(self) -> None:
+        """Show the selected path, or an empty field hinting the default when unset.
+
+        A selected ``config_path`` shows as the field's text. When unset — the
+        default, or after **Clear** — the field is left empty with the default
+        location as greyed placeholder text. Two reasons: the user can tell "using
+        the default" apart from an explicit pick (a real path shown as plain text
+        would look identical to a selection), and Clear now visibly empties the
+        field rather than swapping in another path-looking string. An empty
+        ``environ`` is passed so the default shown is the true default,
+        independent of any ``TOOLBOX_CONFIG`` override (which the note explains).
+        """
+        default = resources.config_path(self._system, {}, None)
+        self.config_path_field.setPlaceholderText(f"Default: {default}")
+        self.config_path_field.setText(self._config_path or "")
+
+
+    def update_custom_visibility(self) -> None:
+        """Reveal the Custom program/arguments fields only for the Custom entry.
+
+        Resizes the dialog to fit afterwards: hiding the two rows shrinks the
+        layout's size hint, but Qt does not pull an already-shown window back in
+        on its own — without ``adjustSize`` the dialog keeps the taller height it
+        grew to for Custom when switching back to a predefined terminal.
+        """
+        is_custom = (
+            self.terminal_combo.currentData() == terminals.CUSTOM_TERMINAL_ID
+        )
+        self.form.setRowVisible(self.custom_program_field, is_custom)
+        self.form.setRowVisible(self.custom_args_field, is_custom)
+        self.adjustSize()
+
+
+    def on_browse(self) -> None:
+        """Pick an existing ``.json`` Config file (spec §4)."""
+        start_dir = (
+            os.path.dirname(self._config_path) if self._config_path else ""
+        )
+        path, _ = QtWidgets.QFileDialog.getOpenFileName(
+            self, "Select Config file", start_dir, "Config files (*.json)"
+        )
+        if path:
+            self._config_path = path
+            self.refresh_config_field()
+
+
+    def on_clear(self) -> None:
+        """Revert to the default Config (removes ``config_path`` on save)."""
+        self._config_path = None
+        self.refresh_config_field()
+
+
+    def save(self) -> None:
+        """Load-modify-write the edited settings (spec §4).
+
+        Re-reads the store immediately before writing so a partial update never
+        clobbers keys another writer touched while the dialog was open (e.g. the
+        silently-persisted ``window_geometry`` / ``last_toolset``). Clearing the
+        Config path removes the key entirely rather than storing an empty string,
+        so resolution falls through to the default. ``config_path_changed`` is
+        set for the caller's live-reload decision.
+        """
+        stored = settings.load_settings()
+
+        if self._config_path:
+            stored["config_path"] = self._config_path
+        else:
+            stored.pop("config_path", None)
+
+        terminal_id = self.terminal_combo.currentData()
+        stored["terminal_id"] = terminal_id
+        if terminal_id == terminals.CUSTOM_TERMINAL_ID:
+            stored["terminal_command"] = {
+                "program": self.custom_program_field.text(),
+                # Whitespace-split into argv templates; a bare ``{command}``
+                # becomes its own element and expands to the rez tokens (spec §3).
+                "args": self.custom_args_field.text().split(),
+            }
+        else:
+            stored.pop("terminal_command", None)
+
+        settings.save_settings(stored)
+
+        self.config_path_changed = (self._config_path or None) != (
+            self._initial_config_path or None
+        )
+
+
+    def accept(self) -> None:
+        """OK: persist the settings, then close (Cancel/``reject`` writes nothing)."""
+        self.save()
+        super().accept()

@@ -35,4 +35,15 @@ recorded intent only — it is not yet applied to the launch invocation.
 The user's `config.json` defining their Toolsets and Tools. Lives in the user's
 home directory (`~/.config/toolbox/`), seeded from the bundled example on first
 launch, and overridable via the `TOOLBOX_CONFIG` environment variable.
-_Avoid_: Settings, preferences.
+_Avoid_: Settings, Preferences (those name the app-level Settings — a different
+thing; Config defines what to launch, Settings configure the app itself).
+
+**Settings**:
+The app-level state Toolbox keeps for itself — including which Config to load and
+the terminal it opens shells in. Distinct from Config: Settings configure the app
+itself; Config defines the Toolsets and Tools the app launches. One entry is a
+setting. Some settings are persisted silently, with no place in the settings UI
+(e.g. window geometry and the last-selected Toolset). Stored in the Settings file
+(`settings.json`) in the user's home directory (`~/.config/toolbox/`), beside the
+Config.
+_Avoid_: Preferences, Config.
