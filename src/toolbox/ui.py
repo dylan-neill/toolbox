@@ -710,12 +710,19 @@ class SettingsDialog(QtWidgets.QDialog):
 
 
     def update_custom_visibility(self) -> None:
-        """Reveal the Custom program/arguments fields only for the Custom entry."""
+        """Reveal the Custom program/arguments fields only for the Custom entry.
+
+        Resizes the dialog to fit afterwards: hiding the two rows shrinks the
+        layout's size hint, but Qt does not pull an already-shown window back in
+        on its own — without ``adjustSize`` the dialog keeps the taller height it
+        grew to for Custom when switching back to a predefined terminal.
+        """
         is_custom = (
             self.terminal_combo.currentData() == terminals.CUSTOM_TERMINAL_ID
         )
         self.form.setRowVisible(self.custom_program_field, is_custom)
         self.form.setRowVisible(self.custom_args_field, is_custom)
+        self.adjustSize()
 
 
     def on_browse(self) -> None:
