@@ -1,7 +1,7 @@
 # Pyright with graded strictness for type checking
 
 We type-check Toolbox with **pyright in strict mode on the logic seams**
-(`model.py`, `data.py`, `resources/`) and a **relaxed profile on the Qt/OS
+(`model.py`, `data.py`, `settings.py`, `terminals.py`, `resources/`) and a **relaxed profile on the Qt/OS
 boundary** (`ui.py`, `globalvars.py`, and the Windows-only `util.py`/`__main__.py`
 paths). A dedicated, blocking `typecheck` CI job runs `uv run pyright` on one
 runner. The goal is not just annotations but a domain modelled so bad states are
