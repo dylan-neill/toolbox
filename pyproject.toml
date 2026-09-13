@@ -70,7 +70,7 @@ bundle = "co.brkpt"
 # [project] uses the older license = { text = ... } form; state the PEP 639
 # fields Briefcase wants explicitly so packaging stays warning-free.
 license = "MIT"
-license-files = ["LICENSE"]
+license-files = ["LICENSE", "NOTICE"]
 
 [tool.briefcase.app.toolbox]
 formal_name = "Toolbox"
