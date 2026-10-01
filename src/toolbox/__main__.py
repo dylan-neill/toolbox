@@ -20,9 +20,9 @@ def main() -> None:
 
     QtWidgets.QApplication.setStyle('fusion')
     app = QtWidgets.QApplication(sys.argv)
+    app.setPalette(globalvars.palette())
 
     main_window = ui.ToolboxWindow()
-    main_window.setPalette(globalvars.palette())
     main_window.show()
     sys.exit(app.exec())
 

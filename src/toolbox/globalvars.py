@@ -7,7 +7,7 @@
 from PySide6 import QtCore, QtGui
 
 app_name: str = 'Toolbox'
-version: tuple[int, int, int] = (0, 6, 0)
+version: tuple[int, int, int] = (0, 7, 0)
 
 def version_string() -> str:
     return f'v{version[0]}.{version[1]}.{version[2]}'
@@ -65,6 +65,9 @@ def palette() -> QtGui.QPalette:
     brush = QtGui.QBrush(QtGui.QColor(0, 0, 0))
     brush.setStyle(QtCore.Qt.SolidPattern)
     palette.setBrush(QtGui.QPalette.Active, QtGui.QPalette.ToolTipText, brush)
+    brush = QtGui.QBrush(QtGui.QColor(200, 200, 200))
+    brush.setStyle(QtCore.Qt.SolidPattern)
+    palette.setBrush(QtGui.QPalette.Active, QtGui.QPalette.PlaceholderText, brush)
     brush = QtGui.QBrush(QtGui.QColor(255, 255, 255))
     brush.setStyle(QtCore.Qt.SolidPattern)
     palette.setBrush(QtGui.QPalette.Inactive, QtGui.QPalette.WindowText, brush)
@@ -113,6 +116,9 @@ def palette() -> QtGui.QPalette:
     brush = QtGui.QBrush(QtGui.QColor(0, 0, 0))
     brush.setStyle(QtCore.Qt.SolidPattern)
     palette.setBrush(QtGui.QPalette.Inactive, QtGui.QPalette.ToolTipText, brush)
+    brush = QtGui.QBrush(QtGui.QColor(200, 200, 200))
+    brush.setStyle(QtCore.Qt.SolidPattern)
+    palette.setBrush(QtGui.QPalette.Inactive, QtGui.QPalette.PlaceholderText, brush)
     brush = QtGui.QBrush(QtGui.QColor(25, 25, 25))
     brush.setStyle(QtCore.Qt.SolidPattern)
     palette.setBrush(QtGui.QPalette.Disabled, QtGui.QPalette.WindowText, brush)
@@ -161,4 +167,7 @@ def palette() -> QtGui.QPalette:
     brush = QtGui.QBrush(QtGui.QColor(0, 0, 0))
     brush.setStyle(QtCore.Qt.SolidPattern)
     palette.setBrush(QtGui.QPalette.Disabled, QtGui.QPalette.ToolTipText, brush)
+    brush = QtGui.QBrush(QtGui.QColor(120, 120, 120))
+    brush.setStyle(QtCore.Qt.SolidPattern)
+    palette.setBrush(QtGui.QPalette.Disabled, QtGui.QPalette.PlaceholderText, brush)
     return palette

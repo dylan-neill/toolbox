@@ -2,7 +2,7 @@
 
 # Toolbox
 
-Toolbox is a DCC software launcher aimed at 3D animation and visual effects production. It uses industry standard Rez packages for environment and version configurations
+Toolbox is a DCC software launcher aimed at 3D animation and visual effects production. It uses industry standard [Rez](https://github.com/AcademySoftwareFoundation/rez) packages for environment and version configurations
 
 ## Features
 
@@ -55,6 +55,34 @@ uv run toolbox
 ```
 
 If `TOOLBOX_CONFIG` points to a directory, Toolbox will look for `config.json` inside that directory.
+
+### Selecting the config file without an environment variable
+
+Toolbox also reads an app-level **settings** file at (`~` is `%USERPROFILE%` on Windows):
+
+```text
+~/.config/toolbox/settings.json
+```
+
+Set its `config_path` to select which config file to load — no `TOOLBOX_CONFIG` needed:
+
+```json
+{
+  "version": 1,
+  "config_path": "/abs/path/to/config.json"
+}
+```
+
+Resolution precedence is: the `TOOLBOX_CONFIG` environment variable (which **overrides** the saved `config_path`) → the `settings.json` `config_path` → the default `~/.config/toolbox/config.json`. If the saved `config_path` points at a file that no longer exists, Toolbox falls back to the default config, reports it, and leaves the setting in place (a network drive may be transiently absent). The settings file is optional — with none present, Toolbox behaves exactly as before — and is not created until a setting is saved.
+
+### The Settings dialog
+
+The **gear** button in the top bar (beside the refresh button) opens a **Settings** dialog:
+
+- **Config file** — shows the currently selected config path. **Browse…** picks an existing `.json` file; **Clear** reverts to the default `~/.config/toolbox/config.json`. If `TOOLBOX_CONFIG` is set, a note reminds you that the environment variable is currently overriding this selection (it still takes precedence over whatever you pick here).
+- **Open Shell terminal** — the terminal that _Open Shell_ launches, chosen from your OS's terminals (e.g. Terminal, iTerm2, Ghostty on macOS) or **Custom…**. Custom reveals a **Program** field and a whitespace-separated **Arguments** field, where `{command}` marks where the `rez-env …` invocation is spliced in.
+
+Clicking **OK** saves your choices; if you changed the config file, the icon grid reloads immediately. **Cancel** discards them. The refresh button beside the gear re-reads the current config file, picking up any external edits.
 
 ### Config format
 
@@ -130,6 +158,7 @@ An installed Toolbox still depends on the workstation environment for Rez and th
 src/toolbox/__main__.py       Application entry point (uv run toolbox)
 src/toolbox/ui.py             PySide6 user interface and launch actions
 src/toolbox/data.py           Config parsing into Tool/ToolSet models (seam C)
+src/toolbox/settings.py       App-level settings store (settings.json; ADR 0006)
 src/toolbox/model.py          Tool and ToolSet dataclasses
 src/toolbox/util.py           Windows desktop-shortcut creation
 src/toolbox/globalvars.py     App name and version

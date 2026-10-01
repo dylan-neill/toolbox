@@ -1,0 +1,13 @@
+Toolbox
+Copyright (c) 2026 Dylan Neill
+
+This product bundles icons from Google Material Icons
+(https://github.com/google/material-design-icons), which are licensed under the
+Apache License, Version 2.0:
+
+  - src/toolbox/resources/icons/settings_icon.png  (Material Icons "settings")
+  - src/toolbox/resources/icons/reload_icon.png    (Material Icons "refresh")
+
+A copy of the Apache License, Version 2.0 may be obtained at:
+
+  https://www.apache.org/licenses/LICENSE-2.0
