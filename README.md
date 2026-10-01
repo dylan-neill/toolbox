@@ -2,7 +2,7 @@
 
 # Toolbox
 
-Toolbox is a DCC software launcher aimed at 3D animation and visual effects production. It uses industry standard Rez packages for environment and version configurations
+Toolbox is a DCC software launcher aimed at 3D animation and visual effects production. It uses industry standard [Rez](https://github.com/AcademySoftwareFoundation/rez) packages for environment and version configurations
 
 ## Features
 
@@ -77,10 +77,10 @@ Resolution precedence is: the `TOOLBOX_CONFIG` environment variable (which **ove
 
 ### The Settings dialog
 
-You don't have to edit `settings.json` by hand. The **gear** button in the top bar (beside the refresh button) opens a **Settings** dialog:
+The **gear** button in the top bar (beside the refresh button) opens a **Settings** dialog:
 
 - **Config file** — shows the currently selected config path. **Browse…** picks an existing `.json` file; **Clear** reverts to the default `~/.config/toolbox/config.json`. If `TOOLBOX_CONFIG` is set, a note reminds you that the environment variable is currently overriding this selection (it still takes precedence over whatever you pick here).
-- **Open Shell terminal** — the terminal that *Open Shell* launches, chosen from your OS's terminals (e.g. Terminal, iTerm2, Ghostty on macOS) or **Custom…**. Custom reveals a **Program** field and a whitespace-separated **Arguments** field, where `{command}` marks where the `rez-env …` invocation is spliced in.
+- **Open Shell terminal** — the terminal that _Open Shell_ launches, chosen from your OS's terminals (e.g. Terminal, iTerm2, Ghostty on macOS) or **Custom…**. Custom reveals a **Program** field and a whitespace-separated **Arguments** field, where `{command}` marks where the `rez-env …` invocation is spliced in.
 
 Clicking **OK** saves your choices; if you changed the config file, the icon grid reloads immediately. **Cancel** discards them. The refresh button beside the gear re-reads the current config file, picking up any external edits.
 
