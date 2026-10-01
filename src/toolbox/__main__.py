@@ -20,10 +20,6 @@ def main() -> None:
 
     QtWidgets.QApplication.setStyle('fusion')
     app = QtWidgets.QApplication(sys.argv)
-    # Theme the whole application, not just the main window: a QDialog (the
-    # Settings dialog) is its own top-level window and does not inherit a palette
-    # set only on the main window, so it would otherwise render in Fusion's
-    # default light palette. Setting it on the app themes every window uniformly.
     app.setPalette(globalvars.palette())
 
     main_window = ui.ToolboxWindow()
