@@ -7,7 +7,7 @@
 from PySide6 import QtCore, QtGui
 
 app_name: str = 'Toolbox'
-version: tuple[int, int, int] = (0, 6, 0)
+version: tuple[int, int, int] = (0, 7, 0)
 
 def version_string() -> str:
     return f'v{version[0]}.{version[1]}.{version[2]}'
