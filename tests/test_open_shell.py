@@ -66,11 +66,12 @@ def test_iterm2_creates_window_via_osascript() -> None:
     ]
 
 
-def test_ghostty_runs_the_cli_binary_with_expanded_argv() -> None:
+def test_ghostty_runs_the_command_in_an_interactive_login_shell() -> None:
     program, args = resources.shell_command("Darwin", REZ, "ghostty")
     assert program == "/Applications/Ghostty.app/Contents/MacOS/ghostty"
-    # {command} as its own element expands to argv tokens after -e.
-    assert args == ["-e", "rez-env", "maya-2025", "site"]
+    # Ghostty execs -e without a shell, so wrap in zsh -lic to pick up the
+    # user's PATH; the rez invocation is one joined token for -c.
+    assert args == ["-e", "/bin/zsh", "-lic", "rez-env maya-2025 site"]
 
 
 def test_windows_terminal_opens_a_new_tab_with_expanded_argv() -> None:

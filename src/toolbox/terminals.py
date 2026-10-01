@@ -84,10 +84,12 @@ TERMINALS: dict[str, dict[str, Terminal]] = {
         # binary directly (``open`` swallows it, and the app is single-instance).
         # Smoke-tested on a real install during implementation (ticket 02 / spec
         # verification task): the binary path launches a window running the command.
+        # The command runs in an interactive login zsh (the macOS default shell) so
+        # the user's ``.zprofile``/``.zshrc`` are sourced and ``rez-env`` is on PATH.
         "ghostty": Terminal(
             "Ghostty",
             "/Applications/Ghostty.app/Contents/MacOS/ghostty",
-            ["-e", COMMAND_PLACEHOLDER],
+            ["-e", "/bin/zsh", "-lic", COMMAND_STR_PLACEHOLDER],
         ),
     },
     "windows": {
