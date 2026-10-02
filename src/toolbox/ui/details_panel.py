@@ -40,9 +40,7 @@ class ToolDetailsPanel(QtWidgets.QWidget):
             QtWidgets.QSizePolicy.Policy.Maximum, QtWidgets.QSizePolicy.Policy.Preferred
         )
 
-        '''
-        Icon and name
-        '''
+        # Icon, name and subtitle, with the menu button to the right.
         self.icon_layout = QtWidgets.QHBoxLayout()
         self.details_layout.addLayout(self.icon_layout)
 
@@ -74,9 +72,6 @@ class ToolDetailsPanel(QtWidgets.QWidget):
         self.details_app_subtitle.setFixedWidth(160)
         self.app_name_layout.addWidget(self.details_app_subtitle)
 
-        '''
-        Menu Button
-        '''
         self.menu_button = QtWidgets.QPushButton()
         self.menu_button.setFixedSize(23,23)
         self.context_menu = QtWidgets.QMenu()
@@ -108,8 +103,6 @@ class ToolDetailsPanel(QtWidgets.QWidget):
         self.packages_label.setEnabled(False)
         self.details_layout.addWidget(self.packages_label)
 
-        # Package Info
-
         self.packages_table = QtWidgets.QTableWidget()
         self.packages_table.setFixedWidth(260)
         self.packages_table.setColumnCount(2)
@@ -119,14 +112,6 @@ class ToolDetailsPanel(QtWidgets.QWidget):
         self.packages_table.setColumnWidth(0, 140)
         self.packages_table.setColumnWidth(1, 116)
         self.packages_table.setEditTriggers(QtWidgets.QTableWidget.NoEditTriggers)
-        palette = QtGui.QPalette()
-        brush = QtGui.QBrush(QtGui.QColor(65, 65, 65))
-        brush.setStyle(QtCore.Qt.SolidPattern)
-        palette.setBrush(QtGui.QPalette.Active, QtGui.QPalette.Base, brush)
-        brush = QtGui.QBrush(QtGui.QColor(60, 60, 60))
-        brush.setStyle(QtCore.Qt.SolidPattern)
-        palette.setBrush(QtGui.QPalette.Inactive, QtGui.QPalette.Base, brush)
-
         self.packages_table.setEnabled(False)
         self.details_layout.addWidget(self.packages_table)
 
@@ -152,9 +137,7 @@ class ToolDetailsPanel(QtWidgets.QWidget):
         font.setBold(True)
         self.launch_button.setFont(font)
         palette = QtGui.QPalette()
-        brush = QtGui.QBrush(QtGui.QColor(55,155,93))
-        brush.setStyle(QtCore.Qt.SolidPattern)
-        palette.setBrush(QtGui.QPalette.Button, brush)
+        palette.setColor(QtGui.QPalette.Button, QtGui.QColor(55, 155, 93))
         self.launch_button.setPalette(palette)
         self.launch_button.setText("Launch")
         self.launch_button.setEnabled(False)
@@ -167,23 +150,19 @@ class ToolDetailsPanel(QtWidgets.QWidget):
             self.packages_table.setEditTriggers(QtWidgets.QTableWidget.AllEditTriggers)
             self.edit_button.setText("Save")
             palette = QtGui.QPalette()
-            brush = QtGui.QBrush(QtGui.QColor(155,25,25))
-            brush.setStyle(QtCore.Qt.SolidPattern)
-            palette.setBrush(QtGui.QPalette.Button, brush)
+            palette.setColor(QtGui.QPalette.Button, QtGui.QColor(155, 25, 25))
             self.edit_button.setPalette(palette)
         else:
             self.packages_table.setEditTriggers(QtWidgets.QTableWidget.NoEditTriggers)
             self.edit_button.setText("Edit...")
             palette = QtGui.QPalette()
-            brush = QtGui.QBrush(QtGui.QColor(80,80,80))
-            brush.setStyle(QtCore.Qt.SolidPattern)
-            palette.setBrush(QtGui.QPalette.Button, brush)
+            palette.setColor(QtGui.QPalette.Button, QtGui.QColor(80, 80, 80))
             self.edit_button.setPalette(palette)
         self.update()
 
 
     def set_enabled(self, enabled: bool) -> None:
-        if enabled is False:
+        if not enabled:
             self.packages_table.clearContents()
 
         self.app_name_label.setEnabled(enabled)

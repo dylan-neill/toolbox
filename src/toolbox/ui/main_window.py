@@ -22,11 +22,6 @@ from .tool_tile import ToolWidget
 
 class ToolboxWindow(QtWidgets.QMainWindow):
 
-    main_font = QtGui.QFont()
-    main_font_bold = QtGui.QFont()
-    main_font_bold.setBold(True)
-
-
     def __init__(self) -> None:
         super(ToolboxWindow, self).__init__()
 
@@ -105,12 +100,8 @@ class ToolboxWindow(QtWidgets.QMainWindow):
         self.log_text_box.setReadOnly(True)
         self.log_text_box.setFixedHeight(64)
         palette = QtGui.QPalette()
-        brush = QtGui.QBrush(QtGui.QColor(65, 65, 65))
-        brush.setStyle(QtCore.Qt.SolidPattern)
-        palette.setBrush(QtGui.QPalette.Active, QtGui.QPalette.Base, brush)
-        brush = QtGui.QBrush(QtGui.QColor(60, 60, 60))
-        brush.setStyle(QtCore.Qt.SolidPattern)
-        palette.setBrush(QtGui.QPalette.Inactive, QtGui.QPalette.Base, brush)
+        palette.setColor(QtGui.QPalette.Active, QtGui.QPalette.Base, QtGui.QColor(65, 65, 65))
+        palette.setColor(QtGui.QPalette.Inactive, QtGui.QPalette.Base, QtGui.QColor(60, 60, 60))
         self.log_text_box.setPalette(palette)
         self.log_text_box.setText(app_name + ' ready...')
 
@@ -338,9 +329,7 @@ class ToolboxWindow(QtWidgets.QMainWindow):
         super().closeEvent(event)
 
 
-    '''
-    UI Interactions
-    '''
+    # UI interactions
     def on_item_clicked(self, item: ToolWidget) -> None:
         self.details_panel.show_tool(item.tool)
 
