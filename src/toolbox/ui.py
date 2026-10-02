@@ -605,11 +605,25 @@ class ToolboxWindow(QtWidgets.QMainWindow):
 
 
     def update_proc_log(self, process: QtCore.QProcess) -> None:
-        self.update_log(str(process.readAll()))
+        output = bytes(process.readAll().data()).decode(errors="replace").strip()
+        if output:
+            self.update_log(output)
 
 
-    def process_cleanup(self, process: QtCore.QProcess) -> None:
-        self.update_log("Process finished")
+    def process_error(self, process: QtCore.QProcess, error: QtCore.QProcess.ProcessError) -> None:
+        if error == QtCore.QProcess.ProcessError.FailedToStart:
+            # No finished signal follows a failed start, so clean up here.
+            self.update_log(
+                f"Error: {process.program()} failed to start: {process.errorString()}"
+            )
+            self.process_list.remove(process)
+        else:
+            self.update_log(f"Error: {process.errorString()}")
+
+
+    def process_cleanup(self, process: QtCore.QProcess, exit_code: int) -> None:
+        self.update_proc_log(process)
+        self.update_log(f"Process finished (exit code {exit_code})")
         self.process_list.remove(process)
 
 
@@ -618,6 +632,19 @@ class ToolboxWindow(QtWidgets.QMainWindow):
         self.update_log(f'Running: {tool.title} {tool.subtitle}...')
 
         process = QtCore.QProcess(self)
+        # Surface the launch in the log: output (stdout and stderr merged), a
+        # failure to start, and the exit code — a silent failure is issue #7.
+        process.setProcessChannelMode(QtCore.QProcess.ProcessChannelMode.MergedChannels)
+        process.readyReadStandardOutput.connect(lambda: self.update_proc_log(process))
+        def on_error(error: QtCore.QProcess.ProcessError) -> None:
+            self.process_error(process, error)
+
+        def on_finished(exit_code: int) -> None:
+            self.process_cleanup(process, exit_code)
+
+        process.errorOccurred.connect(on_error)
+        process.finished.connect(on_finished)
+        self.process_list.append(process)
 
         if open_shell:
             # Pass the rez invocation as tokens (not a joined string): the seam
@@ -635,11 +662,11 @@ class ToolboxWindow(QtWidgets.QMainWindow):
             self.update_log(f'Command: {program} {" ".join(arguments)}')
             process.start(program, arguments)
         else:
-            command = resources.launch_command(
-                resources.rez_command(), tool.rez_wants, tool.command
+            program, arguments = resources.launch_invocation(
+                platform.system(), resources.rez_command(), tool.rez_wants, tool.command
             )
-            self.update_log(f'Command: {command}')
-            process.startCommand(command)
+            self.update_log(f'Command: {program} {" ".join(arguments)}')
+            process.start(program, arguments)
 
 
 class SettingsDialog(QtWidgets.QDialog):

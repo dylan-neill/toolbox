@@ -5,6 +5,8 @@ Turning a Tool's ``rez_wants`` and ``command`` into the
 string the launcher runs is guarded here rather than tangled inside the UI.
 """
 
+import pytest
+
 from toolbox import resources
 
 
@@ -33,3 +35,27 @@ def test_rez_command_is_a_parameter_not_hardcoded() -> None:
     # launcher happens to spell it today.
     command = resources.launch_command("/opt/rez/bin/rez-env", ["blender-4.5"], "blender")
     assert command == "/opt/rez/bin/rez-env blender-4.5 -- blender"
+
+
+# --- launch_invocation: the (program, args) QProcess.start runs ---------------
+
+
+def test_macos_launch_runs_through_an_interactive_login_shell() -> None:
+    # A Finder-launched .app inherits launchd's minimal PATH, so rez-env is not
+    # found unless the user's shell profile is sourced (issue #7). The joined
+    # rez invocation is a single token for -c.
+    program, args = resources.launch_invocation(
+        "Darwin", "rez-env", ["maya-2025", "site"], "maya"
+    )
+    assert program == "/bin/zsh"
+    assert args == ["-lic", "rez-env maya-2025 site -- maya"]
+
+
+@pytest.mark.parametrize("system", ["Windows", "Linux"])
+def test_other_systems_launch_the_rez_invocation_directly(system: str) -> None:
+    # Only macOS needs the login shell; elsewhere the rez invocation is the argv.
+    program, args = resources.launch_invocation(
+        system, "rez-env", ["maya-2025", "site"], "maya"
+    )
+    assert program == "rez-env"
+    assert args == ["maya-2025", "site", "--", "maya"]

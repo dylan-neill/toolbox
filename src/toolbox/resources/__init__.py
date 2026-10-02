@@ -5,6 +5,8 @@ import platform
 from collections.abc import Callable, Mapping
 from typing import TYPE_CHECKING, cast
 
+from PySide6 import QtCore
+
 from .. import settings
 from .. import terminals
 
@@ -113,6 +115,25 @@ def launch_command(rez_command: str, rez_wants: list[str], command: str) -> str:
     built before this seam existed.
     """
     return f"{rez_command} {' '.join(rez_wants)} -- {command}"
+
+
+def launch_invocation(
+    system: str, rez_command: str, rez_wants: list[str], command: str
+) -> tuple[str, list[str]]:
+    """Seam: the ``(program, arguments)`` ``QProcess.start`` runs to launch a Tool.
+
+    Pure. On macOS a Finder-launched app inherits launchd's minimal ``PATH``, so
+    ``rez-env`` is only found once the user's shell profile is sourced (issue
+    #7): the ``launch_command`` string runs inside an interactive login zsh, the
+    same wrapping the Ghostty terminal uses. Elsewhere the string is split with
+    ``QProcess.splitCommand`` — the tokenisation ``QProcess.startCommand`` used
+    before this seam — so other platforms launch exactly as they did.
+    """
+    joined = launch_command(rez_command, rez_wants, command)
+    if system.lower() == "darwin":
+        return "/bin/zsh", ["-lic", joined]
+    program, *arguments = QtCore.QProcess.splitCommand(joined)
+    return program, arguments
 
 
 def shell_command(
