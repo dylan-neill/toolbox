@@ -13,7 +13,7 @@ from typing import Any
 import pytest
 from pytestqt.qtbot import QtBot
 
-from toolbox import data, resources, ui
+from toolbox import data, resources
 from toolbox.model import Tool
 from toolbox.ui import ToolboxWindow
 
@@ -31,7 +31,7 @@ def _tool() -> Tool:
 def _window(qtbot: QtBot, monkeypatch: pytest.MonkeyPatch, system: str) -> ToolboxWindow:
     monkeypatch.setattr(resources, "load_config", _no_toolsets)
     monkeypatch.setattr(resources, "rez_command", lambda: MISSING_REZ)
-    monkeypatch.setattr(ui.platform, "system", lambda: system)
+    monkeypatch.setattr(platform, "system", lambda: system)
     data.populate()
     window = ToolboxWindow()
     qtbot.addWidget(window)
