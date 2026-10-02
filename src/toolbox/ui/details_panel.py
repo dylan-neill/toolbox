@@ -205,19 +205,7 @@ class ToolDetailsPanel(QtWidgets.QWidget):
         self.app_icon.setPixmap(pix)
 
         self.packages_table.clearContents()
-        self.packages_table.setRowCount(len(tool.rez_wants))
-
-        row = 0
-
-        for want in tool.rez_wants:
-            tokens = want.split("-") # Can Rez use hyphens in package names?
-            item = QtWidgets.QTableWidgetItem()
-            item.setText(tokens[0])
-            self.packages_table.setItem(row, 0, item)
-
-            if len(tokens) > 0:
-                item = QtWidgets.QTableWidgetItem()
-                item.setText("-".join(tokens[1:]))
-                self.packages_table.setItem(row, 1, item)
-
-            row += 1
+        self.packages_table.setRowCount(len(tool.packages))
+        for row, (package, version) in enumerate(tool.packages):
+            self.packages_table.setItem(row, 0, QtWidgets.QTableWidgetItem(package))
+            self.packages_table.setItem(row, 1, QtWidgets.QTableWidgetItem(version))

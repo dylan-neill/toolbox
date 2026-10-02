@@ -372,12 +372,9 @@ class ToolboxWindow(QtWidgets.QMainWindow):
             arguments = resources.launch_command(
                 resources.rez_command(), tool.rez_wants, tool.command
             )
-            if tool.subtitle:
-                name = f"{tool.title} ({tool.subtitle})"
-            else:
-                name = tool.title
-
-            util.create_shortcut_on_desktop(name, target=target, arguments=arguments)
+            util.create_shortcut_on_desktop(
+                tool.display_name, target=target, arguments=arguments
+            )
 
 
     def run_tool(self, tool: Tool, open_shell: bool = False) -> None:
