@@ -8,6 +8,7 @@ from PySide6 import QtCore
 
 from .. import resources
 from .. import settings
+from .. import terminals
 from ..model import Tool
 
 
@@ -51,9 +52,9 @@ class ToolLauncher(QtCore.QObject):
             # splices them into the chosen terminal's args template per its
             # placeholder. The terminal comes from the Settings store — unset
             # reproduces today's per-OS default (ticket 02, spec §3).
-            rez_tokens = [resources.rez_command(), *tool.rez_wants]
+            rez_tokens = [resources.REZ_COMMAND, *tool.rez_wants]
             stored = settings.load_settings()
-            program, arguments = resources.shell_command(
+            program, arguments = terminals.shell_command(
                 platform.system(),
                 rez_tokens,
                 stored.get("terminal_id"),
@@ -61,7 +62,7 @@ class ToolLauncher(QtCore.QObject):
             )
         else:
             program, arguments = resources.launch_invocation(
-                platform.system(), resources.rez_command(), tool.rez_wants, tool.command
+                platform.system(), resources.REZ_COMMAND, tool.rez_wants, tool.command
             )
         self.log.emit(f'Command: {program} {" ".join(arguments)}')
         process.start(program, arguments)

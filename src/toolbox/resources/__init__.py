@@ -8,7 +8,6 @@ from typing import TYPE_CHECKING, cast
 from PySide6 import QtCore
 
 from .. import settings
-from .. import terminals
 
 if TYPE_CHECKING:
     # Imported for typing only: importing data at runtime would form a cycle
@@ -22,6 +21,8 @@ if TYPE_CHECKING:
 # from a frozen Briefcase installer. This is distinct from the user's Config in
 # ~/.config/toolbox/, which is writable user data and unaffected by this module.
 _assets = importlib.resources.files(__name__)
+
+REZ_COMMAND = 'rez-env'
 
 
 def icon_path(icon: str) -> str:
@@ -136,36 +137,6 @@ def launch_invocation(
     return program, arguments
 
 
-def shell_command(
-    system: str,
-    rez_tokens: list[str],
-    terminal_id: str | None,
-    custom_command: "settings.TerminalCommandDict | None" = None,
-) -> tuple[str, list[str]]:
-    """Seam: command that opens the user's chosen terminal inside the rez env.
-
-    Pure. Takes the rez invocation as **tokens** (``["rez-env", "A", "B"]``, not a
-    pre-joined string) and the selected ``terminal_id`` (spec §3), and returns the
-    ``(program, arguments)`` that ``QProcess.start`` runs. A tuple rather than one
-    string because QProcess only splits on double quotes with no escaping, so the
-    macOS AppleScript (which embeds double quotes) cannot survive string
-    tokenisation.
-
-    ``terminal_id`` unset (``None``) reproduces today's per-OS default
-    byte-for-byte; a known id picks that terminal from the per-OS registry;
-    ``"custom"`` uses ``custom_command`` (a ``{program, args}`` object). An unknown
-    id — or ``"custom"`` with no stored command — falls back to the OS default
-    rather than crashing (there is no install detection: an uninstalled but known
-    pick fails at launch and logs like any bad command, per spec §3).
-
-    A thin wrapper over the ``terminals`` seam: ``resolve`` picks the
-    ``(program, args-template)`` pair, ``substitute`` fills its ``{command}`` /
-    ``{command_str}`` placeholder with the rez tokens.
-    """
-    program, args_template = terminals.resolve(system, terminal_id, custom_command)
-    return terminals.substitute(program, args_template, rez_tokens)
-
-
 def load_config() -> "ConfigDict":
     # Resolve which Config to load from the saved setting, falling back to the
     # default (and surfacing a message) if a saved config_path is gone/invalid —
@@ -199,6 +170,3 @@ def python_command() -> str:
         return 'pythonw.exe'
     else:
         return 'python3'
-
-def rez_command() -> str:
-    return 'rez-env'
