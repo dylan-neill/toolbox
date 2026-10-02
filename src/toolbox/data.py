@@ -64,9 +64,4 @@ def populate() -> None:
 
 
 def toolset_from_name(name: str) -> ToolSet | None:
-
-    for toolset in toolsets:
-        if toolset.name == name:
-            return toolset
-
-    return None
+    return next((toolset for toolset in toolsets if toolset.name == name), None)

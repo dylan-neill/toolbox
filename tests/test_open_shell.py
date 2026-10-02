@@ -13,7 +13,7 @@ behaviour: with no ``settings.json`` an existing user's *Open Shell* is unchange
 
 import pytest
 
-from toolbox import resources, terminals
+from toolbox import settings, terminals
 
 # The rez invocation as tokens, as the UI now builds it: rez-env + rez_wants.
 REZ = ["rez-env", "maya-2025", "site"]
@@ -24,19 +24,19 @@ JOINED = "rez-env maya-2025 site"
 
 
 def test_default_windows_is_todays_cmd_invocation() -> None:
-    program, args = resources.shell_command("Windows", REZ, None)
+    program, args = terminals.shell_command("Windows", REZ, None)
     assert program == "cmd.exe"
     assert args == ["/C", "start", "cmd.exe", "/K", "rez-env", "maya-2025", "site"]
 
 
 def test_default_linux_is_todays_gnome_terminal_invocation() -> None:
-    program, args = resources.shell_command("Linux", REZ, None)
+    program, args = terminals.shell_command("Linux", REZ, None)
     assert program == "gnome-terminal"
     assert args == ["--", "rez-env", "maya-2025", "site"]
 
 
 def test_default_macos_is_todays_terminal_via_osascript() -> None:
-    program, args = resources.shell_command("Darwin", REZ, None)
+    program, args = terminals.shell_command("Darwin", REZ, None)
     assert program == "osascript"
     # A single AppleScript argument that runs the rez env in a new Terminal — the
     # joined command spliced into the double-quoted script.
@@ -48,7 +48,7 @@ def test_default_macos_is_todays_terminal_via_osascript() -> None:
 
 def test_unknown_system_falls_back_to_gnome_terminal_like_today() -> None:
     # "Linux and anything else" both opened gnome-terminal before the registry.
-    program, args = resources.shell_command("FreeBSD", REZ, None)
+    program, args = terminals.shell_command("FreeBSD", REZ, None)
     assert program == "gnome-terminal"
     assert args == ["--", "rez-env", "maya-2025", "site"]
 
@@ -57,7 +57,7 @@ def test_unknown_system_falls_back_to_gnome_terminal_like_today() -> None:
 
 
 def test_iterm2_creates_window_via_osascript() -> None:
-    program, args = resources.shell_command("Darwin", REZ, "iterm2")
+    program, args = terminals.shell_command("Darwin", REZ, "iterm2")
     assert program == "osascript"
     assert args == [
         "-e",
@@ -67,7 +67,7 @@ def test_iterm2_creates_window_via_osascript() -> None:
 
 
 def test_ghostty_runs_the_command_in_an_interactive_login_shell() -> None:
-    program, args = resources.shell_command("Darwin", REZ, "ghostty")
+    program, args = terminals.shell_command("Darwin", REZ, "ghostty")
     assert program == "/Applications/Ghostty.app/Contents/MacOS/ghostty"
     # Ghostty execs -e without a shell, so wrap in zsh -lic to pick up the
     # user's PATH; the rez invocation is one joined token for -c.
@@ -75,26 +75,26 @@ def test_ghostty_runs_the_command_in_an_interactive_login_shell() -> None:
 
 
 def test_windows_terminal_opens_a_new_tab_with_expanded_argv() -> None:
-    program, args = resources.shell_command("Windows", REZ, "windows-terminal")
+    program, args = terminals.shell_command("Windows", REZ, "windows-terminal")
     assert program == "wt.exe"
     assert args == ["new-tab", "cmd", "/k", "rez-env", "maya-2025", "site"]
 
 
 def test_powershell_passes_the_joined_command_as_one_token() -> None:
-    program, args = resources.shell_command("Windows", REZ, "powershell")
+    program, args = terminals.shell_command("Windows", REZ, "powershell")
     assert program == "cmd.exe"
     # -Command takes its whole value as a single string argument.
     assert args == ["/C", "start", "powershell.exe", "-NoExit", "-Command", JOINED]
 
 
 def test_konsole_expands_argv_after_dash_e() -> None:
-    program, args = resources.shell_command("Linux", REZ, "konsole")
+    program, args = terminals.shell_command("Linux", REZ, "konsole")
     assert program == "konsole"
     assert args == ["-e", "rez-env", "maya-2025", "site"]
 
 
 def test_xterm_expands_argv_after_dash_e() -> None:
-    program, args = resources.shell_command("Linux", REZ, "xterm")
+    program, args = terminals.shell_command("Linux", REZ, "xterm")
     assert program == "xterm"
     assert args == ["-e", "rez-env", "maya-2025", "site"]
 
@@ -105,13 +105,13 @@ def test_xterm_expands_argv_after_dash_e() -> None:
 def test_unknown_terminal_id_falls_back_to_os_default() -> None:
     # No install detection: an id not in the registry resolves to the default
     # rather than crashing.
-    program, args = resources.shell_command("Linux", REZ, "nonesuch")
+    program, args = terminals.shell_command("Linux", REZ, "nonesuch")
     assert program == "gnome-terminal"
     assert args == ["--", "rez-env", "maya-2025", "site"]
 
 
 def test_system_is_case_insensitive() -> None:
-    program, _ = resources.shell_command("darwin", REZ, "iterm2")
+    program, _ = terminals.shell_command("darwin", REZ, "iterm2")
     assert program == "osascript"
 
 
@@ -120,29 +120,29 @@ def test_system_is_case_insensitive() -> None:
 
 def test_custom_expands_command_as_argv_tokens() -> None:
     # {command} as its own element expands to the rez tokens (spec §3).
-    custom: resources.settings.TerminalCommandDict = {
+    custom: settings.TerminalCommandDict = {
         "program": "alacritty",
         "args": ["-e", "{command}"],
     }
-    program, args = resources.shell_command("Linux", REZ, "custom", custom)
+    program, args = terminals.shell_command("Linux", REZ, "custom", custom)
     assert program == "alacritty"
     assert args == ["-e", "rez-env", "maya-2025", "site"]
 
 
 def test_custom_splices_joined_command_inside_a_larger_argument() -> None:
     # {command} embedded in a string splices the joined command in place.
-    custom: resources.settings.TerminalCommandDict = {
+    custom: settings.TerminalCommandDict = {
         "program": "osascript",
         "args": ["-e", 'tell app "Foo" to run "{command}"'],
     }
-    program, args = resources.shell_command("Darwin", REZ, "custom", custom)
+    program, args = terminals.shell_command("Darwin", REZ, "custom", custom)
     assert program == "osascript"
     assert args == ["-e", f'tell app "Foo" to run "{JOINED}"']
 
 
 def test_custom_with_no_stored_command_falls_back_to_default() -> None:
     # terminal_id is "custom" but nothing was stored: don't crash, use default.
-    program, args = resources.shell_command("Linux", REZ, "custom", None)
+    program, args = terminals.shell_command("Linux", REZ, "custom", None)
     assert program == "gnome-terminal"
     assert args == ["--", "rez-env", "maya-2025", "site"]
 
@@ -151,7 +151,7 @@ def test_custom_with_no_stored_command_falls_back_to_default() -> None:
 
 
 def test_empty_rez_wants_opens_a_bare_rez_env_shell() -> None:
-    program, args = resources.shell_command("Linux", ["rez-env"], None)
+    program, args = terminals.shell_command("Linux", ["rez-env"], None)
     assert program == "gnome-terminal"
     assert args == ["--", "rez-env"]
 
@@ -181,7 +181,7 @@ def test_every_predefined_template_carries_a_placeholder(
         for element in args_template
     ), f"{system}/{terminal_id} template has no command placeholder"
 
-    _, args = resources.shell_command(system, REZ, terminal_id)
+    _, args = terminals.shell_command(system, REZ, terminal_id)
     # The command lands either as expanded argv tokens or joined into some arg
     # (standalone for -Command, embedded inside the AppleScript string).
     assert REZ == args[-len(REZ):] or any(JOINED in element for element in args)

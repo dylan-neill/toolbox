@@ -14,7 +14,6 @@ from .. import resources
 from .. import settings
 from .. import data
 from .. import util
-from ..model import Tool
 from .details_panel import ToolDetailsPanel
 from .launcher import ToolLauncher
 from .settings_dialog import SettingsDialog
@@ -35,7 +34,7 @@ class ToolboxWindow(QtWidgets.QMainWindow):
 
     def setup_ui(self) -> None:
 
-        app_name = globalvars.name_with_version()
+        app_name = globalvars.name_with_version
 
         self.setWindowTitle(app_name)
 
@@ -252,12 +251,8 @@ class ToolboxWindow(QtWidgets.QMainWindow):
             self.toolsets_combo.blockSignals(False)
 
 
-    def update_toolset_list(self, project_list: list[str] | None = None) -> None:
-        """
-        Takes project list and adds to toolsets combo box with other default options
-        :param project_list:
-        :return:
-        """
+    def update_toolset_list(self) -> None:
+        """Fill the toolsets combo with the loaded toolsets' names."""
 
         # Block the combo's signals across the clear/addItems churn: each fires
         # currentIndexChanged, which would rebuild the grid mid-repopulate and
@@ -266,13 +261,7 @@ class ToolboxWindow(QtWidgets.QMainWindow):
         self.toolsets_combo.blockSignals(True)
         try:
             self.toolsets_combo.clear()
-
-            items: list[str] = []
-            for toolset in data.toolsets:
-                items.append(toolset.name)
-            if project_list is not None:
-                items.extend(project_list)
-            self.toolsets_combo.addItems(items)
+            self.toolsets_combo.addItems([toolset.name for toolset in data.toolsets])
         finally:
             self.toolsets_combo.blockSignals(False)
 
@@ -335,19 +324,19 @@ class ToolboxWindow(QtWidgets.QMainWindow):
 
 
     def on_item_double_clicked(self, item: ToolWidget) -> None:
-        self.run_tool(item.tool)
+        self.launcher.run(item.tool)
 
 
     def on_launch_clicked(self) -> None:
         items = self.tools_list.selectedItems()
         if len(items) > 0:
-            self.run_tool(items[0].tool)
+            self.launcher.run(items[0].tool)
 
 
     def on_open_shell_clicked(self) -> None:
         items = self.tools_list.selectedItems()
         if len(items) > 0:
-            self.run_tool(items[0].tool, open_shell=True)
+            self.launcher.run(items[0].tool, open_shell=True)
 
 
     def on_shortcut_clicked(self) -> None:
@@ -359,12 +348,8 @@ class ToolboxWindow(QtWidgets.QMainWindow):
             tool = items[0].tool
             target = resources.python_command()
             arguments = resources.launch_command(
-                resources.rez_command(), tool.rez_wants, tool.command
+                resources.REZ_COMMAND, tool.rez_wants, tool.command
             )
             util.create_shortcut_on_desktop(
                 tool.display_name, target=target, arguments=arguments
             )
-
-
-    def run_tool(self, tool: Tool, open_shell: bool = False) -> None:
-        self.launcher.run(tool, open_shell=open_shell)

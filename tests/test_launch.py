@@ -1,7 +1,7 @@
 """Launching a Tool surfaces what happened in the log pane (issue #7).
 
 Headless GUI tests (offscreen Qt, like ``test_reload``) driving
-``ToolboxWindow.run_tool`` with a real ``QProcess``. A launch that cannot start
+the window's ``ToolLauncher`` with a real ``QProcess``. A launch that cannot start
 or that fails inside its shell must say so in the log, rather than leaving the
 user with a silent double-click.
 """
@@ -31,7 +31,7 @@ def _tool() -> Tool:
 
 def _window(qtbot: QtBot, monkeypatch: pytest.MonkeyPatch, system: str) -> ToolboxWindow:
     monkeypatch.setattr(resources, "load_config", _no_toolsets)
-    monkeypatch.setattr(resources, "rez_command", lambda: MISSING_REZ)
+    monkeypatch.setattr(resources, "REZ_COMMAND", MISSING_REZ)
     monkeypatch.setattr(platform, "system", lambda: system)
     data.populate()
     window = ToolboxWindow()
@@ -49,7 +49,7 @@ def test_launch_that_cannot_start_is_logged(
     # Off macOS the rez program is started directly; a missing one never starts.
     window = _window(qtbot, monkeypatch, "Linux")
 
-    window.run_tool(_tool())
+    window.launcher.run(_tool())
 
     qtbot.waitUntil(lambda: "failed to start" in _log(window).lower(), timeout=5000)
     assert MISSING_REZ in _log(window)
@@ -65,7 +65,7 @@ def test_macos_launch_shell_output_and_exit_are_logged(
     monkeypatch.setenv("ZDOTDIR", "/nonexistent/toolbox-test")  # skip user rc files
     window = _window(qtbot, monkeypatch, "Darwin")
 
-    window.run_tool(_tool())
+    window.launcher.run(_tool())
 
     qtbot.waitUntil(lambda: "exit code 127" in _log(window).lower(), timeout=5000)
     assert MISSING_REZ in _log(window).split("Command:", 1)[1].split("\n", 1)[1]
@@ -75,7 +75,7 @@ def test_launcher_reports_through_its_log_signal_alone(
     qtbot: QtBot, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     # The launcher has no UI: everything it has to say arrives on ``log``.
-    monkeypatch.setattr(resources, "rez_command", lambda: MISSING_REZ)
+    monkeypatch.setattr(resources, "REZ_COMMAND", MISSING_REZ)
     monkeypatch.setattr(platform, "system", lambda: "Linux")
     launcher = ToolLauncher()
     lines: list[str] = []

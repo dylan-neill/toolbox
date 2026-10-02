@@ -145,7 +145,7 @@ DEFAULT_TERMINAL: dict[str, str] = {
     "linux": "gnome-terminal",
 }
 
-# Unknown platforms fall through to this OS, mirroring today's ``shell_command``
+# Unknown platforms fall through to this OS, mirroring the original ``shell_command``
 # where "Linux and anything else" both open gnome-terminal.
 _FALLBACK_OS = "linux"
 
@@ -207,3 +207,16 @@ def substitute(
         else:
             arguments.append(element)
     return program, arguments
+
+
+def shell_command(
+    system: str,
+    rez_tokens: list[str],
+    terminal_id: str | None,
+    custom_command: "TerminalCommandDict | None" = None,
+) -> tuple[str, list[str]]:
+    """The ``(program, arguments)`` that opens the chosen terminal inside the rez env.
+
+    ``resolve`` picks the terminal, ``substitute`` splices in the rez tokens.
+    """
+    return substitute(*resolve(system, terminal_id, custom_command), rez_tokens)
