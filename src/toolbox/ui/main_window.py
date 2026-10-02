@@ -1,0 +1,370 @@
+# PySide6's bundled 6.11 stubs under-type signals/slots and many overloads, and
+# Qt getters that can return None (parent(), primaryScreen(), ...) make strict
+# null-checking noisy on UI glue. Per ADR 0005 this file runs the relaxed Qt
+# profile — scoped to those stub-driven rules, not a blanket opt-out. Real
+# correctness fixes (setGeometry ints, the primaryScreen guard) are made, not
+# suppressed.
+# pyright: reportUnknownMemberType=false, reportUnknownArgumentType=false, reportUnknownVariableType=false, reportAttributeAccessIssue=false, reportOptionalMemberAccess=false
+
+import platform
+from PySide6 import QtCore, QtGui, QtWidgets
+
+from .. import globalvars
+from .. import resources
+from .. import settings
+from .. import data
+from .. import util
+from ..model import Tool
+from .details_panel import ToolDetailsPanel
+from .launcher import ToolLauncher
+from .settings_dialog import SettingsDialog
+from .tool_tile import ToolWidget
+
+class ToolboxWindow(QtWidgets.QMainWindow):
+
+    def __init__(self) -> None:
+        super(ToolboxWindow, self).__init__()
+
+        pix = QtGui.QPixmap(resources.icon_path('app_icon512.png'))
+        icon = QtGui.QIcon(pix)
+        self.setWindowIcon(icon)
+
+        self.setup_ui()
+        self.setup_interaction()
+
+
+    def setup_ui(self) -> None:
+
+        app_name = globalvars.name_with_version()
+
+        self.setWindowTitle(app_name)
+
+        self.setMinimumWidth(600)
+        self.setMinimumHeight(300)
+
+        self.central_widget = QtWidgets.QWidget(self)
+
+        self.main_vertical_layout = QtWidgets.QVBoxLayout(self.central_widget)
+        self.main_columns_layout = QtWidgets.QHBoxLayout()
+        self.main_vertical_layout.addLayout(self.main_columns_layout)
+
+        self.tools_layout = QtWidgets.QVBoxLayout()
+
+        # Top bar above the icon grid: the Toolsets label+combo on the left, a
+        # stretch, then the refresh and gear buttons right-aligned (spec §5).
+        self.top_bar_layout = QtWidgets.QHBoxLayout()
+        self.tools_layout.addLayout(self.top_bar_layout)
+
+        self.toolsets_label = QtWidgets.QLabel("Toolsets")
+        self.top_bar_layout.addWidget(self.toolsets_label)
+
+        self.toolsets_combo = QtWidgets.QComboBox(self)
+        self.toolsets_combo.setFixedWidth(260)
+        self.top_bar_layout.addWidget(self.toolsets_combo)
+
+        self.top_bar_layout.addStretch(1)
+
+        self.refresh_button = QtWidgets.QPushButton()
+        self.refresh_button.setFixedSize(23, 23)
+        self.refresh_button.setToolTip("Reload config")
+        self.refresh_button.setIcon(
+            QtGui.QIcon(resources.icon_path("reload_icon.png"))
+        )
+        self.top_bar_layout.addWidget(self.refresh_button)
+
+        # Opens the modal Settings dialog (wired in setup_interaction).
+        self.settings_button = QtWidgets.QPushButton()
+        self.settings_button.setFixedSize(23, 23)
+        self.settings_button.setToolTip("Settings")
+        self.settings_button.setIcon(
+            QtGui.QIcon(resources.icon_path("settings_icon.png"))
+        )
+        self.top_bar_layout.addWidget(self.settings_button)
+
+        self.tools_list = QtWidgets.QListWidget()
+        self.tools_list.setFlow(QtWidgets.QListView.LeftToRight)
+        self.tools_list.setWrapping(True)
+        self.tools_list.setResizeMode(QtWidgets.QListView.Adjust)
+        self.tools_layout.addWidget(self.tools_list)
+
+        self.main_columns_layout.addLayout(self.tools_layout)
+        self.main_columns_layout.addSpacing(20)
+
+        self.details_panel = ToolDetailsPanel(self)
+        self.main_columns_layout.addWidget(self.details_panel)
+
+        self.log_layout = QtWidgets.QHBoxLayout()
+        self.main_vertical_layout.addLayout(self.log_layout)
+        self.log_text_box = QtWidgets.QTextEdit()
+        self.log_layout.addWidget(self.log_text_box)
+        self.log_text_box.setReadOnly(True)
+        self.log_text_box.setFixedHeight(64)
+        palette = QtGui.QPalette()
+        palette.setColor(QtGui.QPalette.Active, QtGui.QPalette.Base, QtGui.QColor(65, 65, 65))
+        palette.setColor(QtGui.QPalette.Inactive, QtGui.QPalette.Base, QtGui.QColor(60, 60, 60))
+        self.log_text_box.setPalette(palette)
+        self.log_text_box.setText(app_name + ' ready...')
+
+        self.setCentralWidget(self.central_widget)
+
+        self.launcher = ToolLauncher(self)
+        self.launcher.log.connect(self.update_log)
+
+        # Populate the combo before set_defaults so the launch restore can
+        # reselect the saved last_toolset by name (spec §5). update_tools is
+        # called explicitly, not left to the combo's currentIndexChanged: that
+        # signal stays blocked through every programmatic repopulation below.
+        self.update_toolset_list()
+        self.set_defaults()
+        self.update_tools()
+
+
+    def update_log(self, text: str) -> None:
+        """
+        Adds a line of text to the log pane
+        :param text: The text to add
+        :return:
+        """
+        cursor = self.log_text_box.textCursor()
+        cursor.movePosition(cursor.MoveOperation.End)
+        cursor.insertText('\n' + text.rstrip('\n'))
+        sb = self.log_text_box.verticalScrollBar()
+        sb.setValue(sb.maximum())
+
+
+    def setup_interaction(self) -> None:
+        """
+        Makes all UI interaction connections
+        :return:
+        """
+        self.tools_list.itemClicked.connect(self.on_item_clicked)
+        self.tools_list.itemDoubleClicked.connect(self.on_item_double_clicked)
+        self.toolsets_combo.currentIndexChanged.connect(self.on_toolset_changed)
+        self.details_panel.launch_requested.connect(self.on_launch_clicked)
+        self.details_panel.shell_requested.connect(self.on_open_shell_clicked)
+        self.details_panel.shortcut_requested.connect(self.on_shortcut_clicked)
+        self.refresh_button.clicked.connect(self.reload_config)
+        self.settings_button.clicked.connect(self.on_settings_clicked)
+
+
+    def set_defaults(self) -> None:
+        """Restore saved window geometry and last toolset, else the built-in defaults.
+
+        Replaces the previously hardcoded geometry and ``setCurrentIndex(0)``
+        (spec §5): on launch the saved ``window_geometry`` and ``last_toolset``
+        are restored from the Settings store, each falling back to the built-in
+        default — the centered 845×460 size, and the first toolset — when absent
+        (or, for geometry, unusable). Restoring the toolset is a programmatic
+        change, so it goes through the signal-blocking ``restore_toolset_selection``
+        and does not count as a user change that would persist a spurious
+        ``last_toolset``.
+        """
+        stored = settings.load_settings()
+
+        geometry = stored.get("window_geometry")
+        # restoreGeometry returns False for empty/corrupt data; fall back to the
+        # centered default in that case as well as when nothing was saved, so the
+        # window never opens with an unset (0×0 / off-screen) geometry.
+        restored = bool(geometry) and self.restoreGeometry(
+            QtCore.QByteArray.fromBase64(geometry.encode("ascii"))
+        )
+        if not restored:
+            self.center_with_default_size()
+
+        self.restore_toolset_selection(stored.get("last_toolset") or "")
+
+    def center_with_default_size(self) -> None:
+        """Size the window to the default 845×460 and center it on the screen."""
+        width = 845
+        height = 460
+        screen_rect = QtWidgets.QApplication.primaryScreen().geometry()
+        # Integer division: setGeometry takes ints, and screen dimensions are ints.
+        pos_x = (screen_rect.width() - width) // 2
+        pos_y = (screen_rect.height() - height) // 2
+        self.setGeometry(pos_x, pos_y, width, height)
+
+
+    def reload_config(self) -> None:
+        """Re-resolve and re-read the Config, rebuilding the grid live.
+
+        Wired to the refresh button. Re-resolves the config path and re-parses
+        the file, so an externally edited Config is reflected without a restart.
+
+        Never crashes and never blanks the grid: a read or parse error is caught
+        and logged to the log pane while the currently-loaded toolsets stay on
+        screen. ``data.populate`` only swaps ``data.toolsets`` on a clean parse,
+        so a failure leaves the previous toolsets intact. The selected toolset is
+        preserved by name across the reload, falling back to the first when it no
+        longer exists.
+        """
+        previous = self.toolsets_combo.currentText()
+        try:
+            data.populate()
+        except Exception as exc:
+            # A resilience boundary around a user-editable file: the criterion is
+            # "never crashes". parse_config's documented failure is KeyError on a
+            # bad shape, but a hand-edited Config can fail in other ways too — a
+            # corrupt file (json.JSONDecodeError / ValueError), an unreadable one
+            # (OSError), or a wrong-typed shape (TypeError, e.g. a toolset that is
+            # a string). Catch broadly, keep the current toolsets on screen, and
+            # surface why rather than blank the grid.
+            self.update_log(f"Config reload failed, keeping current toolsets: {exc}")
+            return
+        self.update_toolset_list()
+        self.restore_toolset_selection(previous)
+        # Rebuild the grid explicitly (spec §5) rather than leaning only on the
+        # combo's currentIndexChanged side-effect — so a future guard that blocks
+        # that signal during repopulation (ticket 05) cannot silently stop it.
+        self.update_tools()
+
+
+    def on_settings_clicked(self) -> None:
+        """Open the modal Settings dialog; live-reload if the Config changed.
+
+        The dialog owns its own load-modify-write on OK (spec §4); the window's
+        only job afterwards is to re-read the Config when the saved
+        ``config_path`` changed, so the grid updates immediately without a
+        restart. Cancel writes nothing and leaves the grid untouched.
+        """
+        dialog = SettingsDialog(self)
+        if dialog.exec() and dialog.config_path_changed:
+            self.reload_config()
+
+
+    def restore_toolset_selection(self, name: str) -> None:
+        """Reselect the toolset named ``name``, falling back to the first.
+
+        Used on launch to restore the saved ``last_toolset`` and after a reload
+        rebuilds the combo: a toolset that survived (or a launch-restored name
+        that still exists) is reselected by name, its index having possibly
+        moved; one that is gone or empty leaves the selection on index 0.
+
+        The reselection is a programmatic change, so the combo's signals are
+        blocked while it happens — otherwise it would fire ``on_toolset_changed``
+        and persist a spurious ``last_toolset`` (spec §5). Callers rebuild the
+        grid via an explicit ``update_tools``.
+        """
+        index = self.toolsets_combo.findText(name)
+        self.toolsets_combo.blockSignals(True)
+        try:
+            self.toolsets_combo.setCurrentIndex(index if index >= 0 else 0)
+        finally:
+            self.toolsets_combo.blockSignals(False)
+
+
+    def update_toolset_list(self, project_list: list[str] | None = None) -> None:
+        """
+        Takes project list and adds to toolsets combo box with other default options
+        :param project_list:
+        :return:
+        """
+
+        # Block the combo's signals across the clear/addItems churn: each fires
+        # currentIndexChanged, which would rebuild the grid mid-repopulate and
+        # (spec §5) persist a spurious last_toolset off the transient selection.
+        # Callers that need the grid rebuilt call update_tools explicitly.
+        self.toolsets_combo.blockSignals(True)
+        try:
+            self.toolsets_combo.clear()
+
+            items: list[str] = []
+            for toolset in data.toolsets:
+                items.append(toolset.name)
+            if project_list is not None:
+                items.extend(project_list)
+            self.toolsets_combo.addItems(items)
+        finally:
+            self.toolsets_combo.blockSignals(False)
+
+
+    def update_tools(self) -> None:
+
+        self.tools_list.clear()
+        toolset_name = self.toolsets_combo.currentText()
+        toolset = data.toolset_from_name(toolset_name)
+
+        if toolset is not None:
+            for tool in toolset.tools:
+                list_item = ToolWidget(tool)
+                list_item.setSizeHint(QtCore.QSize(128,160))
+                self.tools_list.addItem(list_item)
+                self.tools_list.setItemWidget(list_item, list_item.widget)
+
+
+    def on_toolset_changed(self) -> None:
+        """Handle a genuine user toolset change: rebuild the grid, then persist it.
+
+        Wired to the combo's ``currentIndexChanged``. Programmatic repopulation
+        (launch restore, live reload) blocks that signal, so this only runs for a
+        user's own selection — exactly when ``last_toolset`` should be written
+        (spec §5). The grid rebuild stays here so a plain user pick still updates
+        the tools even though the signal is blocked during repopulation.
+        """
+        self.update_tools()
+        self.save_last_toolset()
+
+
+    def save_last_toolset(self) -> None:
+        """Persist the current toolset as ``last_toolset`` (load-modify-write).
+
+        Re-reads the store immediately before writing so a partial update never
+        clobbers ``config_path`` / ``terminal`` or the saved ``window_geometry``.
+        """
+        stored = settings.load_settings()
+        stored["last_toolset"] = self.toolsets_combo.currentText()
+        settings.save_settings(stored)
+
+
+    def closeEvent(self, event: QtGui.QCloseEvent) -> None:
+        """Save the window geometry on close (spec §5), then close as usual.
+
+        base64 of ``saveGeometry()`` via load-modify-write, so persisting the
+        geometry never clobbers ``config_path`` / ``terminal`` / ``last_toolset``.
+        """
+        stored = settings.load_settings()
+        stored["window_geometry"] = (
+            self.saveGeometry().toBase64().data().decode("ascii")
+        )
+        settings.save_settings(stored)
+        super().closeEvent(event)
+
+
+    # UI interactions
+    def on_item_clicked(self, item: ToolWidget) -> None:
+        self.details_panel.show_tool(item.tool)
+
+
+    def on_item_double_clicked(self, item: ToolWidget) -> None:
+        self.run_tool(item.tool)
+
+
+    def on_launch_clicked(self) -> None:
+        items = self.tools_list.selectedItems()
+        if len(items) > 0:
+            self.run_tool(items[0].tool)
+
+
+    def on_open_shell_clicked(self) -> None:
+        items = self.tools_list.selectedItems()
+        if len(items) > 0:
+            self.run_tool(items[0].tool, open_shell=True)
+
+
+    def on_shortcut_clicked(self) -> None:
+        if platform.system().lower() != "windows":
+            self.update_log("Error: Creating desktop shortcuts is only supported on Windows")
+            return
+        items = self.tools_list.selectedItems()
+        if len(items) > 0:
+            tool = items[0].tool
+            target = resources.python_command()
+            arguments = resources.launch_command(
+                resources.rez_command(), tool.rez_wants, tool.command
+            )
+            util.create_shortcut_on_desktop(
+                tool.display_name, target=target, arguments=arguments
+            )
+
+
+    def run_tool(self, tool: Tool, open_shell: bool = False) -> None:
+        self.launcher.run(tool, open_shell=open_shell)

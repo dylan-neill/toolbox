@@ -156,7 +156,7 @@ An installed Toolbox still depends on the workstation environment for Rez and th
 
 ```text
 src/toolbox/__main__.py       Application entry point (uv run toolbox)
-src/toolbox/ui.py             PySide6 user interface and launch actions
+src/toolbox/ui/               PySide6 user interface (main window, Settings dialog)
 src/toolbox/data.py           Config parsing into Tool/ToolSet models (seam C)
 src/toolbox/settings.py       App-level settings store (settings.json; ADR 0006)
 src/toolbox/model.py          Tool and ToolSet dataclasses

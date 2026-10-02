@@ -14,6 +14,25 @@ class Tool():
     def title(self) -> str:
         return f"{self.name} {self.version}"
 
+    @property
+    def display_name(self) -> str:
+        """The title, with the subtitle in parentheses when there is one."""
+        if self.subtitle:
+            return f"{self.title} ({self.subtitle})"
+        return self.title
+
+    @property
+    def packages(self) -> list[tuple[str, str]]:
+        """Each Rez want as ``(package, version)``, split at the first hyphen.
+
+        A want with no version (``"site"``) gets an empty version; anything
+        after the first hyphen is the version, hyphens included.
+        """
+        return [
+            (package, version)
+            for package, _, version in (want.partition("-") for want in self.rez_wants)
+        ]
+
 @dataclass
 class ToolSet():
     name: str

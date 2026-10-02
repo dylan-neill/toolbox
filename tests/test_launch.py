@@ -13,9 +13,10 @@ from typing import Any
 import pytest
 from pytestqt.qtbot import QtBot
 
-from toolbox import data, resources, ui
+from toolbox import data, resources
 from toolbox.model import Tool
 from toolbox.ui import ToolboxWindow
+from toolbox.ui.launcher import ToolLauncher
 
 MISSING_REZ = "/nonexistent/toolbox-test/rez-env"
 
@@ -31,7 +32,7 @@ def _tool() -> Tool:
 def _window(qtbot: QtBot, monkeypatch: pytest.MonkeyPatch, system: str) -> ToolboxWindow:
     monkeypatch.setattr(resources, "load_config", _no_toolsets)
     monkeypatch.setattr(resources, "rez_command", lambda: MISSING_REZ)
-    monkeypatch.setattr(ui.platform, "system", lambda: system)
+    monkeypatch.setattr(platform, "system", lambda: system)
     data.populate()
     window = ToolboxWindow()
     qtbot.addWidget(window)
@@ -68,3 +69,20 @@ def test_macos_launch_shell_output_and_exit_are_logged(
 
     qtbot.waitUntil(lambda: "exit code 127" in _log(window).lower(), timeout=5000)
     assert MISSING_REZ in _log(window).split("Command:", 1)[1].split("\n", 1)[1]
+
+
+def test_launcher_reports_through_its_log_signal_alone(
+    qtbot: QtBot, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # The launcher has no UI: everything it has to say arrives on ``log``.
+    monkeypatch.setattr(resources, "rez_command", lambda: MISSING_REZ)
+    monkeypatch.setattr(platform, "system", lambda: "Linux")
+    launcher = ToolLauncher()
+    lines: list[str] = []
+    launcher.log.connect(lines.append)
+
+    launcher.run(_tool())
+
+    qtbot.waitUntil(lambda: any("failed to start" in line for line in lines), timeout=5000)
+    assert lines[0] == "Running: Maya 2025 ..."
+    assert lines[1].startswith(f"Command: {MISSING_REZ} ")

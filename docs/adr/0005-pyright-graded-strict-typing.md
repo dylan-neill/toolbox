@@ -2,7 +2,7 @@
 
 We type-check Toolbox with **pyright in strict mode on the logic seams**
 (`model.py`, `data.py`, `settings.py`, `terminals.py`, `resources/`) and a **relaxed profile on the Qt/OS
-boundary** (`ui.py`, `globalvars.py`, and the Windows-only `util.py`/`__main__.py`
+boundary** (the `ui/` package, `globalvars.py`, and the Windows-only `util.py`/`__main__.py`
 paths). A dedicated, blocking `typecheck` CI job runs `uv run pyright` on one
 runner. The goal is not just annotations but a domain modelled so bad states are
 hard to represent — hence full strictness where the real logic lives.
@@ -16,7 +16,7 @@ hard to represent — hence full strictness where the real logic lives.
 - **ty (Astral)** — fits the uv toolchain but is pre-1.0; too green to gate CI on
   today. Revisit later.
 - **Uniform strict everywhere** — rejected: PySide6 6.11's stubs leave signals,
-  slots and many overloads under-typed, so blanket strict on the Qt-heavy `ui.py`
+  slots and many overloads under-typed, so blanket strict on the Qt-heavy `ui/`
   produces noise that reflects stub gaps, not our bugs, and trains readers to
   ignore the checker.
 
@@ -24,7 +24,7 @@ hard to represent — hence full strictness where the real logic lives.
 
 - The relaxation on the Qt/OS boundary is expressed as per-file `# pyright:`
   rule overrides at the top of those files, not a global lowering. A future
-  reader seeing `ui.py` exempt should read this ADR: the exemption is deliberate
+  reader seeing `ui/` exempt should read this ADR: the exemption is deliberate
   and scoped to the stub-driven rules, not a blanket "types don't matter here".
 - Windows-only code (`win32com`, `ctypes.windll`) is guarded with
   `sys.platform == "win32"` (which pyright narrows on) rather than
